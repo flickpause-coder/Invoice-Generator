@@ -1,13 +1,12 @@
 
 /**
- * InvoiceGen Modal System
- * Handles modal dialogs for viewing, editing, and creating invoices and clients
- * Enhanced with Payment Tracking & Status Management
+ * ModalSystem - Enhanced modal system with reminder configuration
+ * Phase 3: Reminder settings and email template management
  */
-
 class ModalSystem {
     constructor() {
-        this.currentModal = null;
+        this.activeModal = null;
+        this.modalStack = [];
         this.init();
     }
 
@@ -17,804 +16,383 @@ class ModalSystem {
     }
 
     createModalContainer() {
-        // Create modal container if it doesn't exist
-        if (!document.getElementById('modal-container')) {
-            const modalContainer = document.createElement('div');
-            modalContainer.id = 'modal-container';
-            modalContainer.className = 'fixed inset-0 z-50 hidden';
-            document.body.appendChild(modalContainer);
-        }
+        if (document.getElementById('modal-container')) return;
+
+        const container = document.createElement('div');
+        container.id = 'modal-container';
+        container.className = 'fixed inset-0 z-50 hidden';
+        document.body.appendChild(container);
     }
 
     setupEventListeners() {
-        // Close modal when clicking outside
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal-backdrop')) {
-                this.closeModal();
-            }
-        });
-
-        // Close modal with Escape key
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.currentModal) {
+            if (e.key === 'Escape' && this.activeModal) {
                 this.closeModal();
             }
         });
     }
 
-    showModal(content) {
+    showModal(content, options = {}) {
+        const modal = this.createModal(content, options);
+        this.displayModal(modal);
+        return modal;
+    }
+
+    createModal(content, options) {
+        const modal = {
+            id: 'modal-' + Date.now(),
+            content: content,
+            options: {
+                size: options.size || 'md',
+                closable: options.closable !== false,
+                backdrop: options.backdrop !== false,
+                ...options
+            }
+        };
+
+        return modal;
+    }
+
+    displayModal(modal) {
         const container = document.getElementById('modal-container');
+        
+        const sizeClasses = {
+            sm: 'max-w-md',
+            md: 'max-w-lg',
+            lg: 'max-w-2xl',
+            xl: 'max-w-4xl',
+            full: 'max-w-full mx-4'
+        };
+
         container.innerHTML = `
-            <div class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-                <div class="modal-content bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-screen overflow-y-auto">
-                    ${content}
+            <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" ${modal.options.backdrop ? 'onclick="modalSystem.closeModal()"' : ''}></div>
+            <div class="fixed inset-0 flex items-center justify-center p-4">
+                <div class="bg-white rounded-lg shadow-xl ${sizeClasses[modal.options.size]} w-full max-h-screen overflow-y-auto">
+                    ${modal.options.closable ? `
+                        <div class="absolute top-4 right-4 z-10">
+                            <button onclick="modalSystem.closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+                        </div>
+                    ` : ''}
+                    <div class="p-6">
+                        ${modal.content}
+                    </div>
                 </div>
             </div>
         `;
+
         container.classList.remove('hidden');
-        this.currentModal = container;
-        document.body.style.overflow = 'hidden';
+        this.activeModal = modal;
+        this.modalStack.push(modal);
+
+        // Focus management
+        const firstInput = container.querySelector('input, select, textarea, button');
+        if (firstInput) {
+            setTimeout(() => firstInput.focus(), 100);
+        }
     }
 
     closeModal() {
         const container = document.getElementById('modal-container');
         container.classList.add('hidden');
         container.innerHTML = '';
-        this.currentModal = null;
-        document.body.style.overflow = '';
+        
+        this.modalStack.pop();
+        this.activeModal = this.modalStack.length > 0 ? this.modalStack[this.modalStack.length - 1] : null;
     }
 
-    // Enhanced Invoice View Modal with Payment Information
-    showViewInvoiceModal(invoiceId) {
-        const invoice = window.dataStore.getInvoice(invoiceId);
-        const client = invoice.clientId ? window.dataStore.getClient(invoice.clientId) : null;
-
-        if (!invoice) {
-            alert('Invoice not found');
-            return;
-        }
-
-        const paymentHistory = invoice.paymentHistory || [];
-        const statusHistory = invoice.statusHistory || [];
-        const paidAmount = invoice.paidAmount || 0;
-        const remainingAmount = (invoice.total || 0) - paidAmount;
-        const paymentProgress = invoice.total > 0 ? (paidAmount / invoice.total) * 100 : 0;
-
+    // Reminder Settings Modal
+    showReminderSettingsModal(dataStore) {
+        const settings = dataStore.getReminderSettings();
+        
         const content = `
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-900">Invoice ${invoice.id}</h2>
-                    <div class="flex space-x-2">
-                        <button onclick="window.pdfGenerator.previewInvoice(${JSON.stringify(invoice).replace(/"/g, '&quot;')}, ${client ? JSON.stringify(client).replace(/"/g, '&quot;') : 'null'})" 
-                                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-                            <i class="fas fa-eye mr-2"></i>Preview
-                        </button>
-                        <button onclick="window.pdfGenerator.generateInvoicePDF(${JSON.stringify(invoice).replace(/"/g, '&quot;')}, ${client ? JSON.stringify(client).replace(/"/g, '&quot;') : 'null'})" 
-                                class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
-                            <i class="fas fa-download mr-2"></i>Download PDF
-                        </button>
-                        <button onclick="window.modalSystem.showEditInvoiceModal('${invoice.id}')" 
-                                class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700">
-                            <i class="fas fa-edit mr-2"></i>Edit
-                        </button>
-                        <button onclick="window.modalSystem.closeModal()" 
-                                class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">
-                            <i class="fas fa-times mr-2"></i>Close
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Payment Status Overview -->
-                <div class="bg-gradient-to-r from-blue-50 to-green-50 p-6 rounded-lg mb-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Payment Status</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                        <div class="text-center">
-                            <div class="text-2xl font-bold text-gray-900">${this.formatCurrency(invoice.total || 0)}</div>
-                            <div class="text-sm text-gray-600">Total Amount</div>
+            <div class="reminder-settings-modal">
+                <h2 class="text-2xl font-bold mb-6">Reminder Settings</h2>
+                
+                <form id="reminder-settings-form" class="space-y-6">
+                    <!-- Enable/Disable Reminders -->
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                            <h3 class="font-semibold">Enable Automatic Reminders</h3>
+                            <p class="text-sm text-gray-600">Automatically send payment reminders for unpaid invoices</p>
                         </div>
-                        <div class="text-center">
-                            <div class="text-2xl font-bold text-green-600">${this.formatCurrency(paidAmount)}</div>
-                            <div class="text-sm text-gray-600">Paid Amount</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-2xl font-bold text-yellow-600">${this.formatCurrency(remainingAmount)}</div>
-                            <div class="text-sm text-gray-600">Remaining</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-2xl font-bold text-blue-600">${paymentProgress.toFixed(1)}%</div>
-                            <div class="text-sm text-gray-600">Progress</div>
-                        </div>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-3">
-                        <div class="bg-gradient-to-r from-green-400 to-green-600 h-3 rounded-full transition-all duration-300" 
-                             style="width: ${paymentProgress}%"></div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                    <!-- Invoice Details -->
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                        <h3 class="font-semibold text-gray-900 mb-3">Invoice Details</h3>
-                        <div class="space-y-2">
-                            <div><span class="font-medium">Invoice #:</span> ${invoice.id}</div>
-                            <div><span class="font-medium">Date:</span> ${this.formatDate(invoice.date)}</div>
-                            <div><span class="font-medium">Due Date:</span> ${this.formatDate(invoice.dueDate)}</div>
-                            <div><span class="font-medium">Status:</span> 
-                                <span class="status-badge status-${invoice.status}">${this.capitalizeFirst(invoice.status)}</span>
-                                ${invoice.status === 'overdue' && invoice.overdueDays ? `<span class="text-red-600 text-sm ml-2">(${invoice.overdueDays} days overdue)</span>` : ''}
-                            </div>
-                            <div><span class="font-medium">Description:</span> ${invoice.description || 'N/A'}</div>
-                            ${invoice.lastPaymentDate ? `<div><span class="font-medium">Last Payment:</span> ${this.formatDate(invoice.lastPaymentDate)}</div>` : ''}
-                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="reminders-enabled" ${settings.enabled ? 'checked' : ''} class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
                     </div>
 
-                    <!-- Client Information -->
-                    ${client ? `
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                        <h3 class="font-semibold text-gray-900 mb-3">Client Information</h3>
-                        <div class="space-y-2">
-                            <div><span class="font-medium">Name:</span> ${client.name}</div>
-                            <div><span class="font-medium">Company:</span> ${client.company}</div>
-                            <div><span class="font-medium">Email:</span> ${client.email}</div>
-                            <div><span class="font-medium">Phone:</span> ${client.phone}</div>
-                            <div><span class="font-medium">Address:</span> ${client.address}</div>
-                        </div>
-                    </div>
-                    ` : `
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                        <h3 class="font-semibold text-gray-900 mb-3">Client Information</h3>
-                        <div class="text-gray-500">No client linked to this invoice</div>
-                    </div>
-                    `}
-                </div>
-
-                <!-- Items -->
-                <div class="mb-6">
-                    <h3 class="font-semibold text-gray-900 mb-3">Items</h3>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rate</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                ${invoice.items.map(item => `
-                                    <tr>
-                                        <td class="px-6 py-4 text-sm text-gray-900">${item.description}</td>
-                                        <td class="px-6 py-4 text-sm text-gray-900">${item.quantity}</td>
-                                        <td class="px-6 py-4 text-sm text-gray-900">${this.formatCurrency(item.rate)}</td>
-                                        <td class="px-6 py-4 text-sm text-gray-900">${this.formatCurrency(item.amount)}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Payment History -->
-                ${paymentHistory.length > 0 ? `
-                <div class="mb-6">
-                    <h3 class="font-semibold text-gray-900 mb-3">Payment History</h3>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Method</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reference</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Note</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                ${paymentHistory.map(payment => `
-                                    <tr>
-                                        <td class="px-4 py-3 text-sm text-gray-900">${this.formatDate(payment.date)}</td>
-                                        <td class="px-4 py-3 text-sm font-medium text-green-600">${this.formatCurrency(payment.amount)}</td>
-                                        <td class="px-4 py-3 text-sm text-gray-500">${window.paymentManager.getPaymentMethodLabel(payment.method)}</td>
-                                        <td class="px-4 py-3 text-sm text-gray-500">${payment.reference || '-'}</td>
-                                        <td class="px-4 py-3 text-sm text-gray-500">${payment.note || '-'}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                ` : ''}
-
-                <!-- Status History -->
-                ${statusHistory.length > 0 ? `
-                <div class="mb-6">
-                    <h3 class="font-semibold text-gray-900 mb-3">Status History</h3>
+                    <!-- Before Due Date Reminders -->
                     <div class="space-y-3">
-                        ${statusHistory.map(status => `
-                            <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                                <div class="flex-shrink-0">
-                                    <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
-                                </div>
-                                <div class="flex-1">
-                                    <div class="text-sm font-medium text-gray-900">
-                                        Changed from <span class="status-badge status-${status.from}">${this.capitalizeFirst(status.from)}</span> 
-                                        to <span class="status-badge status-${status.to}">${this.capitalizeFirst(status.to)}</span>
-                                    </div>
-                                    <div class="text-xs text-gray-500">${this.formatDate(status.timestamp)} ${status.note ? `• ${status.note}` : ''}</div>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-                ` : ''}
-
-                <!-- Invoice Total -->
-                <div class="flex justify-end">
-                    <div class="w-64">
-                        <div class="flex justify-between py-2">
-                            <span class="font-medium">Subtotal:</span>
-                            <span>${this.formatCurrency(invoice.subtotal)}</span>
-                        </div>
-                        ${invoice.tax > 0 ? `
-                        <div class="flex justify-between py-2">
-                            <span class="font-medium">Tax:</span>
-                            <span>${this.formatCurrency(invoice.tax)}</span>
-                        </div>
-                        ` : ''}
-                        <div class="flex justify-between py-2 border-t border-gray-200 font-bold text-lg">
-                            <span>Total:</span>
-                            <span>${this.formatCurrency(invoice.total)}</span>
-                        </div>
-                        ${paidAmount > 0 ? `
-                        <div class="flex justify-between py-2 text-green-600">
-                            <span class="font-medium">Paid:</span>
-                            <span>-${this.formatCurrency(paidAmount)}</span>
-                        </div>
-                        <div class="flex justify-between py-2 border-t border-gray-200 font-bold text-lg ${remainingAmount > 0 ? 'text-red-600' : 'text-green-600'}">
-                            <span>Balance:</span>
-                            <span>${this.formatCurrency(remainingAmount)}</span>
-                        </div>
-                        ` : ''}
-                    </div>
-                </div>
-            </div>
-        `;
-
-        this.showModal(content);
-    }
-
-    // Enhanced Invoice Edit Modal with Status Management
-    showEditInvoiceModal(invoiceId = null) {
-        const invoice = invoiceId ? window.dataStore.getInvoice(invoiceId) : null;
-        const clients = window.dataStore.getClients();
-        const isEdit = !!invoice;
-
-        const content = `
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-900">${isEdit ? 'Edit' : 'Create'} Invoice</h2>
-                    <button onclick="window.modalSystem.closeModal()" 
-                            class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
-                </div>
-
-                <form id="invoice-form" class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Client</label>
-                            <select id="client-select" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">Select a client</option>
-                                ${clients.map(client => `
-                                    <option value="${client.id}" ${invoice && invoice.clientId === client.id ? 'selected' : ''}>
-                                        ${client.name} - ${client.company}
-                                    </option>
-                                `).join('')}
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                            <select id="status-select" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <option value="draft" ${invoice && invoice.status === 'draft' ? 'selected' : ''}>Draft</option>
-                                <option value="sent" ${invoice && invoice.status === 'sent' ? 'selected' : ''}>Sent</option>
-                                <option value="paid" ${invoice && invoice.status === 'paid' ? 'selected' : ''}>Paid</option>
-                                <option value="overdue" ${invoice && invoice.status === 'overdue' ? 'selected' : ''}>Overdue</option>
-                            </select>
-                            ${isEdit ? `<div class="text-xs text-gray-500 mt-1">Current: ${this.capitalizeFirst(invoice.status)}</div>` : ''}
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
-                            <input type="date" id="date-input" value="${invoice ? invoice.date : new Date().toISOString().split('T')[0]}" 
-                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
-                            <input type="date" id="due-date-input" value="${invoice ? invoice.dueDate : ''}" 
-                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <h3 class="font-semibold">Before Due Date Reminders</h3>
+                        <p class="text-sm text-gray-600">Send reminders X days before the due date</p>
+                        <div class="flex flex-wrap gap-2">
+                            ${[1, 3, 7, 14, 30].map(days => `
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" name="beforeDueDays" value="${days}" 
+                                           ${settings.beforeDueDays.includes(days) ? 'checked' : ''}>
+                                    <span>${days} day${days > 1 ? 's' : ''}</span>
+                                </label>
+                            `).join('')}
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                        <input type="text" id="description-input" value="${invoice ? invoice.description || '' : ''}" 
-                               placeholder="Brief description of the invoice"
-                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    </div>
-
-                    ${isEdit && (invoice.paidAmount || 0) > 0 ? `
-                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                        <div class="flex items-center">
-                            <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
-                            <div class="text-sm text-yellow-800">
-                                <strong>Payment Warning:</strong> This invoice has received payments totaling ${this.formatCurrency(invoice.paidAmount)}. 
-                                Changing the total amount may affect payment calculations.
-                            </div>
-                        </div>
-                    </div>
-                    ` : ''}
-
-                    <div>
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold text-gray-900">Items</h3>
-                            <button type="button" onclick="window.modalSystem.addInvoiceItem()" 
-                                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-                                <i class="fas fa-plus mr-2"></i>Add Item
-                            </button>
-                        </div>
-                        
-                        <div id="items-container">
-                            ${invoice && invoice.items ? invoice.items.map((item, index) => this.createItemRow(item, index)).join('') : this.createItemRow()}
+                    <!-- After Due Date Reminders -->
+                    <div class="space-y-3">
+                        <h3 class="font-semibold">After Due Date Reminders</h3>
+                        <p class="text-sm text-gray-600">Send reminders X days after the due date</p>
+                        <div class="flex flex-wrap gap-2">
+                            ${[1, 7, 14, 30, 60].map(days => `
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" name="afterDueDays" value="${days}" 
+                                           ${settings.afterDueDays.includes(days) ? 'checked' : ''}>
+                                    <span>${days} day${days > 1 ? 's' : ''}</span>
+                                </label>
+                            `).join('')}
                         </div>
                     </div>
 
-                    <div class="flex justify-between items-center pt-6 border-t border-gray-200">
-                        <div class="text-right">
-                            <div class="text-lg font-semibold">Total: $<span id="total-amount">0.00</span></div>
-                            ${isEdit && (invoice.paidAmount || 0) > 0 ? `
-                            <div class="text-sm text-gray-600">
-                                Paid: ${this.formatCurrency(invoice.paidAmount)} | 
-                                Balance: $<span id="balance-amount">${((invoice.total || 0) - (invoice.paidAmount || 0)).toFixed(2)}</span>
-                            </div>
-                            ` : ''}
-                        </div>
-                        <div class="flex space-x-4">
-                            <button type="button" onclick="window.modalSystem.closeModal()" 
-                                    class="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700">
-                                Cancel
-                            </button>
-                            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
-                                ${isEdit ? 'Update' : 'Create'} Invoice
-                            </button>
-                        </div>
+                    <!-- Maximum Reminders -->
+                    <div class="space-y-3">
+                        <label class="block">
+                            <span class="font-semibold">Maximum Reminders per Invoice</span>
+                            <input type="number" id="max-reminders" value="${settings.maxReminders}" 
+                                   min="1" max="20" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                        </label>
                     </div>
-                </form>
-            </div>
-        `;
 
-        this.showModal(content);
-        this.setupInvoiceForm(invoice);
-    }
-
-    createItemRow(item = null, index = 0) {
-        return `
-            <div class="item-row grid grid-cols-12 gap-4 mb-4 items-end" data-index="${index}">
-                <div class="col-span-5">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                    <input type="text" class="item-description w-full border border-gray-300 rounded-lg px-3 py-2" 
-                           value="${item ? item.description : ''}" placeholder="Item description">
-                </div>
-                <div class="col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
-                    <input type="number" class="item-quantity w-full border border-gray-300 rounded-lg px-3 py-2" 
-                           value="${item ? item.quantity : 1}" min="1">
-                </div>
-                <div class="col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Rate</label>
-                    <input type="number" class="item-rate w-full border border-gray-300 rounded-lg px-3 py-2" 
-                           value="${item ? item.rate : 0}" min="0" step="0.01">
-                </div>
-                <div class="col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
-                    <input type="number" class="item-amount w-full border border-gray-300 rounded-lg px-3 py-2" 
-                           value="${item ? item.amount : 0}" readonly>
-                </div>
-                <div class="col-span-1">
-                    <button type="button" onclick="window.modalSystem.removeInvoiceItem(this)" 
-                            class="bg-red-600 text-white px-3 py-2 rounded-lg hover:bg-red-700">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-        `;
-    }
-
-    setupInvoiceForm(invoice) {
-        const form = document.getElementById('invoice-form');
-        
-        // Calculate totals when items change
-        const updateTotals = () => {
-            let total = 0;
-            document.querySelectorAll('.item-row').forEach(row => {
-                const quantity = parseFloat(row.querySelector('.item-quantity').value) || 0;
-                const rate = parseFloat(row.querySelector('.item-rate').value) || 0;
-                const amount = quantity * rate;
-                row.querySelector('.item-amount').value = amount.toFixed(2);
-                total += amount;
-            });
-            document.getElementById('total-amount').textContent = total.toFixed(2);
-            
-            // Update balance if editing invoice with payments
-            if (invoice && (invoice.paidAmount || 0) > 0) {
-                const balanceElement = document.getElementById('balance-amount');
-                if (balanceElement) {
-                    const balance = total - (invoice.paidAmount || 0);
-                    balanceElement.textContent = balance.toFixed(2);
-                }
-            }
-        };
-
-        // Add event listeners for calculation
-        document.addEventListener('input', (e) => {
-            if (e.target.classList.contains('item-quantity') || e.target.classList.contains('item-rate')) {
-                updateTotals();
-            }
-        });
-
-        // Initial calculation
-        updateTotals();
-
-        // Form submission
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.saveInvoice(invoice ? invoice.id : null);
-        });
-    }
-
-    addInvoiceItem() {
-        const container = document.getElementById('items-container');
-        const index = container.children.length;
-        container.insertAdjacentHTML('beforeend', this.createItemRow(null, index));
-    }
-
-    removeInvoiceItem(button) {
-        const row = button.closest('.item-row');
-        row.remove();
-        // Recalculate totals
-        this.updateTotals();
-    }
-
-    updateTotals() {
-        let total = 0;
-        document.querySelectorAll('.item-row').forEach(row => {
-            const quantity = parseFloat(row.querySelector('.item-quantity').value) || 0;
-            const rate = parseFloat(row.querySelector('.item-rate').value) || 0;
-            const amount = quantity * rate;
-            row.querySelector('.item-amount').value = amount.toFixed(2);
-            total += amount;
-        });
-        document.getElementById('total-amount').textContent = total.toFixed(2);
-    }
-
-    saveInvoice(invoiceId) {
-        const form = document.getElementById('invoice-form');
-        
-        // Collect items
-        const items = [];
-        document.querySelectorAll('.item-row').forEach(row => {
-            const description = row.querySelector('.item-description').value;
-            const quantity = parseFloat(row.querySelector('.item-quantity').value) || 0;
-            const rate = parseFloat(row.querySelector('.item-rate').value) || 0;
-            const amount = quantity * rate;
-            
-            if (description && quantity > 0) {
-                items.push({ description, quantity, rate, amount });
-            }
-        });
-
-        if (items.length === 0) {
-            alert('Please add at least one item to the invoice.');
-            return;
-        }
-
-        const clientId = document.getElementById('client-select').value;
-        const client = clientId ? window.dataStore.getClient(clientId) : null;
-        const subtotal = items.reduce((sum, item) => sum + item.amount, 0);
-        const newStatus = document.getElementById('status-select').value;
-
-        const invoiceData = {
-            clientId: clientId || null,
-            clientName: client ? client.company : 'No Client',
-            description: document.getElementById('description-input').value,
-            date: document.getElementById('date-input').value,
-            dueDate: document.getElementById('due-date-input').value,
-            status: newStatus,
-            items: items,
-            subtotal: subtotal,
-            tax: 0, // Can be extended later
-            total: subtotal
-        };
-
-        try {
-            if (invoiceId) {
-                const currentInvoice = window.dataStore.getInvoice(invoiceId);
-                
-                // Check if status change is valid
-                if (currentInvoice.status !== newStatus) {
-                    if (!window.dataStore.isValidStatusTransition(currentInvoice.status, newStatus)) {
-                        alert(`Cannot change status from ${currentInvoice.status} to ${newStatus}. Please use a valid transition.`);
-                        return;
-                    }
-                }
-                
-                // Update remaining amount if total changed
-                if (currentInvoice.total !== subtotal) {
-                    invoiceData.remainingAmount = subtotal - (currentInvoice.paidAmount || 0);
-                }
-                
-                window.dataStore.updateInvoice(invoiceId, invoiceData);
-                alert('Invoice updated successfully!');
-            } else {
-                window.dataStore.createInvoice(invoiceData);
-                alert('Invoice created successfully!');
-            }
-            
-            this.closeModal();
-            
-            // Trigger custom events
-            const event = new CustomEvent(invoiceId ? 'invoiceUpdated' : 'invoiceCreated', {
-                detail: { invoiceId: invoiceId || 'new' }
-            });
-            document.dispatchEvent(event);
-            
-        } catch (error) {
-            console.error('Error saving invoice:', error);
-            alert('Error saving invoice: ' + error.message);
-        }
-    }
-
-    // Client Modals (unchanged from original)
-    showViewClientModal(clientId) {
-        const client = window.dataStore.getClient(clientId);
-        const invoices = window.dataStore.getInvoices().filter(inv => inv.clientId === clientId);
-
-        if (!client) {
-            alert('Client not found');
-            return;
-        }
-
-        const content = `
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-900">${client.name}</h2>
-                    <div class="flex space-x-2">
-                        <button onclick="window.modalSystem.showEditClientModal('${client.id}')" 
-                                class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700">
-                            <i class="fas fa-edit mr-2"></i>Edit
-                        </button>
-                        <button onclick="window.modalSystem.closeModal()" 
-                                class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">
-                            <i class="fas fa-times mr-2"></i>Close
-                        </button>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                        <h3 class="font-semibold text-gray-900 mb-3">Contact Information</h3>
-                        <div class="space-y-2">
-                            <div><span class="font-medium">Name:</span> ${client.name}</div>
-                            <div><span class="font-medium">Company:</span> ${client.company}</div>
-                            <div><span class="font-medium">Email:</span> ${client.email}</div>
-                            <div><span class="font-medium">Phone:</span> ${client.phone}</div>
-                            <div><span class="font-medium">Status:</span> 
-                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${client.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
-                                    ${this.capitalizeFirst(client.status)}
-                                </span>
-                            </div>
+                    <!-- Business Hours -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-semibold">Business Hours Restriction</h3>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="business-hours-enabled" ${settings.businessHours.enabled ? 'checked' : ''} class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <label class="block">
+                                <span class="text-sm">Start Time</span>
+                                <input type="time" id="business-start" value="${settings.businessHours.start}" 
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            </label>
+                            <label class="block">
+                                <span class="text-sm">End Time</span>
+                                <input type="time" id="business-end" value="${settings.businessHours.end}" 
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            </label>
                         </div>
                     </div>
 
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                        <h3 class="font-semibold text-gray-900 mb-3">Address</h3>
-                        <div>${client.address}</div>
-                    </div>
-                </div>
-
-                <div>
-                    <h3 class="font-semibold text-gray-900 mb-3">Invoice History (${invoices.length})</h3>
-                    ${invoices.length > 0 ? `
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Invoice #</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Paid</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    ${invoices.map(invoice => `
-                                        <tr>
-                                            <td class="px-6 py-4 text-sm font-medium text-gray-900">${invoice.id}</td>
-                                            <td class="px-6 py-4 text-sm text-gray-500">${this.formatDate(invoice.date)}</td>
-                                            <td class="px-6 py-4 text-sm text-gray-900">${this.formatCurrency(invoice.total)}</td>
-                                            <td class="px-6 py-4 text-sm text-green-600">${this.formatCurrency(invoice.paidAmount || 0)}</td>
-                                            <td class="px-6 py-4 text-sm">
-                                                <span class="status-badge status-${invoice.status}">${this.capitalizeFirst(invoice.status)}</span>
-                                            </td>
-                                            <td class="px-6 py-4 text-sm">
-                                                <button onclick="window.modalSystem.showViewInvoiceModal('${invoice.id}')" 
-                                                        class="text-blue-600 hover:text-blue-900">View</button>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    ` : `
-                        <div class="text-gray-500 text-center py-8">No invoices found for this client</div>
-                    `}
-                </div>
-            </div>
-        `;
-
-        this.showModal(content);
-    }
-
-    showEditClientModal(clientId = null) {
-        const client = clientId ? window.dataStore.getClient(clientId) : null;
-        const isEdit = !!client;
-
-        const content = `
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-900">${isEdit ? 'Edit' : 'Add'} Client</h2>
-                    <button onclick="window.modalSystem.closeModal()" 
-                            class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
-                </div>
-
-                <form id="client-form" class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Name *</label>
-                            <input type="text" id="name-input" value="${client ? client.name : ''}" required
-                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Company *</label>
-                            <input type="text" id="company-input" value="${client ? client.company : ''}" required
-                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
-                            <input type="email" id="email-input" value="${client ? client.email : ''}" required
-                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Phone</label>
-                            <input type="tel" id="phone-input" value="${client ? client.phone : ''}"
-                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                            <select id="status-input" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <option value="active" ${client && client.status === 'active' ? 'selected' : ''}>Active</option>
-                                <option value="inactive" ${client && client.status === 'inactive' ? 'selected' : ''}>Inactive</option>
-                            </select>
+                    <!-- Email Settings -->
+                    <div class="space-y-3">
+                        <h3 class="font-semibold">Email Settings</h3>
+                        <div class="flex items-center space-x-4">
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" id="email-enabled" ${settings.emailEnabled ? 'checked' : ''}>
+                                <span>Enable Email Reminders</span>
+                            </label>
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
-                        <textarea id="address-input" rows="3" 
-                                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">${client ? client.address : ''}</textarea>
-                    </div>
-
-                    <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
-                        <button type="button" onclick="window.modalSystem.closeModal()" 
-                                class="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700">
+                    <!-- Action Buttons -->
+                    <div class="flex justify-end space-x-3 pt-6 border-t">
+                        <button type="button" onclick="modalSystem.closeModal()" 
+                                class="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50">
                             Cancel
                         </button>
-                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
-                            ${isEdit ? 'Update' : 'Create'} Client
+                        <button type="button" onclick="modalSystem.showEmailTemplatesModal(window.dataStore)" 
+                                class="px-4 py-2 text-blue-600 border border-blue-300 rounded-md hover:bg-blue-50">
+                            Manage Templates
+                        </button>
+                        <button type="submit" 
+                                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                            Save Settings
                         </button>
                     </div>
                 </form>
             </div>
         `;
 
-        this.showModal(content);
-        this.setupClientForm(client);
-    }
+        this.showModal(content, { size: 'lg' });
 
-    setupClientForm(client) {
-        const form = document.getElementById('client-form');
-        
-        form.addEventListener('submit', (e) => {
+        // Handle form submission
+        document.getElementById('reminder-settings-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            this.saveClient(client ? client.id : null);
+            this.saveReminderSettings(dataStore);
         });
     }
 
-    saveClient(clientId) {
-        const clientData = {
-            name: document.getElementById('name-input').value,
-            company: document.getElementById('company-input').value,
-            email: document.getElementById('email-input').value,
-            phone: document.getElementById('phone-input').value,
-            address: document.getElementById('address-input').value,
-            status: document.getElementById('status-input').value
+    saveReminderSettings(dataStore) {
+        const form = document.getElementById('reminder-settings-form');
+        const formData = new FormData(form);
+
+        const settings = {
+            enabled: document.getElementById('reminders-enabled').checked,
+            beforeDueDays: Array.from(form.querySelectorAll('input[name="beforeDueDays"]:checked')).map(cb => parseInt(cb.value)),
+            afterDueDays: Array.from(form.querySelectorAll('input[name="afterDueDays"]:checked')).map(cb => parseInt(cb.value)),
+            maxReminders: parseInt(document.getElementById('max-reminders').value),
+            emailEnabled: document.getElementById('email-enabled').checked,
+            businessHours: {
+                enabled: document.getElementById('business-hours-enabled').checked,
+                start: document.getElementById('business-start').value,
+                end: document.getElementById('business-end').value,
+                timezone: 'UTC'
+            },
+            templates: dataStore.getReminderSettings().templates // Preserve existing template settings
         };
 
-        // Validation
-        if (!clientData.name || !clientData.company || !clientData.email) {
-            alert('Please fill in all required fields (Name, Company, Email).');
-            return;
-        }
+        dataStore.setReminderSettings(settings);
+        this.closeModal();
+        
+        // Show success message
+        this.showAlert('Reminder settings saved successfully!', 'success');
+    }
 
-        try {
-            if (clientId) {
-                window.dataStore.updateClient(clientId, clientData);
-                alert('Client updated successfully!');
-            } else {
-                window.dataStore.createClient(clientData);
-                alert('Client created successfully!');
-            }
-            
-            this.closeModal();
-            
-            // Trigger custom events
-            const event = new CustomEvent(clientId ? 'clientUpdated' : 'clientCreated', {
-                detail: { clientId: clientId || 'new' }
-            });
-            document.dispatchEvent(event);
-            
-        } catch (error) {
-            console.error('Error saving client:', error);
-            alert('Error saving client. Please try again.');
-        }
+    // Email Templates Modal
+    showEmailTemplatesModal(dataStore) {
+        const templates = dataStore.getEmailTemplates();
+        
+        const content = `
+            <div class="email-templates-modal">
+                <h2 class="text-2xl font-bold mb-6">Email Templates</h2>
+                
+                <div class="space-y-4">
+                    ${Object.values(templates).map(template => `
+                        <div class="border rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h3 class="font-semibold">${template.name}</h3>
+                                    <p class="text-sm text-gray-600">Template ID: ${template.id}</p>
+                                </div>
+                                <button onclick="modalSystem.editEmailTemplate('${template.id}', window.dataStore)" 
+                                        class="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">
+                                    Edit
+                                </button>
+                            </div>
+                            <div class="text-sm">
+                                <p><strong>Subject:</strong> ${template.subject}</p>
+                                <p class="mt-2"><strong>Variables:</strong> ${template.variables.join(', ')}</p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="flex justify-end space-x-3 pt-6 border-t mt-6">
+                    <button type="button" onclick="modalSystem.closeModal()" 
+                            class="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50">
+                        Close
+                    </button>
+                </div>
+            </div>
+        `;
+
+        this.showModal(content, { size: 'lg' });
+    }
+
+    editEmailTemplate(templateId, dataStore) {
+        const template = dataStore.getEmailTemplate(templateId);
+        
+        const content = `
+            <div class="edit-template-modal">
+                <h2 class="text-2xl font-bold mb-6">Edit Email Template</h2>
+                
+                <form id="template-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Template Name</label>
+                        <input type="text" id="template-name" value="${template.name}" 
+                               class="w-full rounded-md border-gray-300 shadow-sm">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Subject Line</label>
+                        <input type="text" id="template-subject" value="${template.subject}" 
+                               class="w-full rounded-md border-gray-300 shadow-sm">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2">HTML Content</label>
+                        <textarea id="template-html" rows="10" 
+                                  class="w-full rounded-md border-gray-300 shadow-sm font-mono text-sm">${template.htmlContent}</textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Text Content</label>
+                        <textarea id="template-text" rows="6" 
+                                  class="w-full rounded-md border-gray-300 shadow-sm">${template.textContent}</textarea>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-medium mb-2">Available Variables:</h4>
+                        <div class="text-sm text-gray-600 grid grid-cols-2 gap-2">
+                            ${template.variables.map(variable => `<code>{{${variable}}}</code>`).join('')}
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end space-x-3 pt-6 border-t">
+                        <button type="button" onclick="modalSystem.closeModal()" 
+                                class="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="submit" 
+                                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                            Save Template
+                        </button>
+                    </div>
+                </form>
+            </div>
+        `;
+
+        this.showModal(content, { size: 'xl' });
+
+        // Handle form submission
+        document.getElementById('template-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.saveEmailTemplate(templateId, dataStore);
+        });
+    }
+
+    saveEmailTemplate(templateId, dataStore) {
+        const updates = {
+            name: document.getElementById('template-name').value,
+            subject: document.getElementById('template-subject').value,
+            htmlContent: document.getElementById('template-html').value,
+            textContent: document.getElementById('template-text').value
+        };
+
+        dataStore.updateEmailTemplate(templateId, updates);
+        this.closeModal();
+        this.showAlert('Email template saved successfully!', 'success');
     }
 
     // Utility methods
-    formatDate(dateString) {
-        if (!dateString) return '';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-    }
+    showAlert(message, type = 'info') {
+        const alertDiv = document.createElement('div');
+        const colors = {
+            success: 'bg-green-100 border-green-400 text-green-700',
+            warning: 'bg-yellow-100 border-yellow-400 text-yellow-700',
+            error: 'bg-red-100 border-red-400 text-red-700',
+            info: 'bg-blue-100 border-blue-400 text-blue-700'
+        };
 
-    formatCurrency(amount) {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD'
-        }).format(amount || 0);
-    }
+        alertDiv.className = `fixed top-4 right-4 ${colors[type]} border px-4 py-3 rounded-lg shadow-lg z-50 max-w-sm`;
+        alertDiv.innerHTML = `
+            <div class="flex items-center justify-between">
+                <span>${message}</span>
+                <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-lg">&times;</button>
+            </div>
+        `;
 
-    capitalizeFirst(str) {
-        return str.charAt(0).toUpperCase() + str.slice(1);
+        document.body.appendChild(alertDiv);
+
+        setTimeout(() => {
+            if (alertDiv.parentElement) {
+                alertDiv.remove();
+            }
+        }, 5000);
     }
 }
 
-// Create global instance
-window.modalSystem = new ModalSystem();
-
-// Export for module usage
+// Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = ModalSystem;
 }
