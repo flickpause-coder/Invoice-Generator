@@ -1,13 +1,11 @@
 // Invoice Automation System for InvoiceGen
+// Phase 3: Enhanced automation with integrated reminder system
 // Handles automated reminders, bulk operations, and workflow management
 
 class InvoiceAutomation {
     constructor() {
         this.authService = window.ImprovedAuthService || window.AuthService;
-        this.reminderIntervals = {
-            beforeDue: [7, 3, 1], // days before due date
-            afterDue: [1, 7, 14]  // days after due date
-        };
+        this.reminderSystem = null;
         this.automationEnabled = true;
         this.debugMode = localStorage.getItem('debugMode') === 'true';
         this.init();
@@ -19,11 +17,33 @@ class InvoiceAutomation {
         }
     }
 
-    init() {
-        this.log('🤖 Initializing Invoice Automation');
+    async init() {
+        this.log('🤖 Initializing Invoice Automation with Reminder System');
+        
+        // Wait for reminder system to be available
+        await this.waitForReminderSystem();
+        
         this.setupEventListeners();
         this.startAutomation();
         this.loadAutomationSettings();
+    }
+
+    async waitForReminderSystem() {
+        // Wait for the global reminder system to be initialized
+        let attempts = 0;
+        const maxAttempts = 50; // 5 seconds max wait
+        
+        while (!window.reminderSystem?.isInitialized && attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        if (window.reminderSystem?.isInitialized) {
+            this.reminderSystem = window.reminderSystem;
+            this.log('✅ Connected to Reminder System');
+        } else {
+            this.log('⚠️ Reminder System not available, using legacy mode');
+        }
     }
 
     setupEventListeners() {
@@ -109,6 +129,13 @@ class InvoiceAutomation {
         
         this.log('📧 Checking for invoice reminders');
         
+        // Use new reminder system if available, otherwise fall back to legacy
+        if (this.reminderSystem?.isInitialized) {
+            this.log('🔄 Delegating to new Reminder System');
+            return this.reminderSystem.reminderScheduler.processDueReminders();
+        }
+        
+        // Legacy fallback
         const invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
         const currentDate = new Date();
         let remindersSent = 0;
