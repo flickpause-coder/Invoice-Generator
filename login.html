@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - InvoiceGen</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .hover-lift {
+            transition: all 0.3s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        .demo-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .demo-card:hover {
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.15);
+        }
+        .form-input {
+            transition: all 0.3s ease;
+        }
+        .form-input:focus {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+        .login-button {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            transition: all 0.3s ease;
+        }
+        .login-button:hover {
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+        }
+        .error-message {
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .success-message {
+            animation: slideIn 0.3s ease;
+        }
+        .role-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+    <!-- Background Animation -->
+    <div class="fixed inset-0 overflow-hidden z-0">
+        <div class="absolute -inset-[10px] opacity-50">
+            <div class="absolute top-0 -left-4 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl animate-blob"></div>
+            <div class="absolute top-0 -right-4 w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000"></div>
+            <div class="absolute -bottom-8 left-20 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000"></div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="relative z-10 w-full max-w-6xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white mb-2">
+                <i class="fas fa-file-invoice-dollar mr-3"></i>
+                InvoiceGen
+            </h1>
+            <p class="text-white/80 text-lg">Professional Invoice Management System</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Login Form -->
+            <div class="glass-effect rounded-2xl p-8 hover-lift">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h2>
+                    <p class="text-gray-600">Sign in to your account to continue</p>
+                </div>
+
+                <!-- Login Form -->
+                <form id="login-form" class="space-y-6">
+                    <!-- Email Input -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-envelope mr-2"></i>Email Address
+                        </label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="Enter your email"
+                            required
+                        >
+                    </div>
+
+                    <!-- Password Input -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-lock mr-2"></i>Password
+                        </label>
+                        <div class="relative">
+                            <input 
+                                type="password" 
+                                id="password" 
+                                class="form-input w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Enter your password"
+                                required
+                            >
+                            <button 
+                                type="button" 
+                                id="toggle-password" 
+                                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            >
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Remember Me & Forgot Password -->
+                    <div class="flex items-center justify-between">
+                        <label class="flex items-center">
+                            <input 
+                                type="checkbox" 
+                                id="remember-me" 
+                                class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            >
+                            <span class="ml-2 text-sm text-gray-600">Remember me</span>
+                        </label>
+                        <a href="#" class="text-sm text-blue-600 hover:text-blue-500">
+                            Forgot password?
+                        </a>
+                    </div>
+
+                    <!-- Error/Success Messages -->
+                    <div id="message-container" class="hidden">
+                        <div id="error-message" class="error-message bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded hidden">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            <span id="error-text"></span>
+                        </div>
+                        <div id="success-message" class="success-message bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded hidden">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            <span id="success-text"></span>
+                        </div>
+                    </div>
+
+                    <!-- Login Button -->
+                    <button 
+                        type="submit" 
+                        class="login-button w-full text-white py-3 px-4 rounded-lg font-medium"
+                    >
+                        <i class="fas fa-sign-in-alt mr-2"></i>
+                        Sign In
+                    </button>
+                </form>
+
+                <!-- Divider -->
+                <div class="relative my-8">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white/80 text-gray-500">Or continue with</span>
+                    </div>
+                </div>
+
+                <!-- Test Account Quick Login -->
+                <div class="text-center">
+                    <button 
+                        onclick="quickLogin()" 
+                        class="w-full bg-gray-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-gray-700 transition-colors"
+                    >
+                        <i class="fas fa-rocket mr-2"></i>
+                        Quick Test Login
+                    </button>
+                    <p class="text-xs text-gray-500 mt-2">
+                        Use test@invoicegen.com / test123
+                    </p>
+                </div>
+            </div>
+
+            <!-- Demo Accounts -->
+            <div class="glass-effect rounded-2xl p-8">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Demo Accounts</h2>
+                    <p class="text-gray-600">Test different user roles and permissions</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Admin Demo -->
+                    <div class="demo-card relative bg-white/60 rounded-lg p-6 text-center" onclick="demoLogin('admin')">
+                        <div class="role-badge">ADMIN</div>
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-user-shield text-red-600 text-2xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-gray-900 mb-1">Administrator</h3>
+                        <p class="text-sm text-gray-600 mb-2">Full system access</p>
+                        <div class="text-xs text-gray-500">
+                            <i class="fas fa-crown mr-1"></i>All features
+                        </div>
+                    </div>
+
+                    <!-- Accountant Demo -->
+                    <div class="demo-card relative bg-white/60 rounded-lg p-6 text-center" onclick="demoLogin('accountant')">
+                        <div class="role-badge">ACCOUNTANT</div>
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-calculator text-blue-600 text-2xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-gray-900 mb-1">Accountant</h3>
+                        <p class="text-sm text-gray-600 mb-2">Financial management</p>
+                        <div class="text-xs text-gray-500">
+                            <i class="fas fa-chart-line mr-1"></i>Limited access
+                        </div>
+                    </div>
+
+                    <!-- Staff Demo -->
+                    <div class="demo-card relative bg-white/60 rounded-lg p-6 text-center" onclick="demoLogin('staff')">
+                        <div class="role-badge">STAFF</div>
+                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-users text-yellow-600 text-2xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-gray-900 mb-1">Staff Member</h3>
+                        <p class="text-sm text-gray-600 mb-2">Basic operations</p>
+                        <div class="text-xs text-gray-500">
+                            <i class="fas fa-user mr-1"></i>Standard access
+                        </div>
+                    </div>
+
+                    <!-- Viewer Demo -->
+                    <div class="demo-card relative bg-white/60 rounded-lg p-6 text-center" onclick="demoLogin('viewer')">
+                        <div class="role-badge">VIEWER</div>
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-eye text-gray-600 text-2xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-gray-900 mb-1">Viewer</h3>
+                        <p class="text-sm text-gray-600 mb-2">Read-only access</p>
+                        <div class="text-xs text-gray-500">
+                            <i class="fas fa-lock mr-1"></i>View only
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test Access Portal -->
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <div class="text-center">
+                        <h3 class="font-semibold text-gray-900 mb-2">Advanced Testing</h3>
+                        <p class="text-sm text-gray-600 mb-4">Access comprehensive testing tools and features</p>
+                        <a 
+                            href="test-access.html" 
+                            class="inline-flex items-center bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+                        >
+                            <i class="fas fa-flask mr-2"></i>
+                            Test Access Portal
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-8">
+            <p class="text-white/70 text-sm">
+                © 2025 InvoiceGen. Professional invoice management for modern businesses.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize authentication service
+        let authService;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for auth service to load
+            setTimeout(() => {
+                authService = window.ImprovedAuthService || window.AuthService;
+                initializeLoginPage();
+            }, 100);
+        });
+
+        function initializeLoginPage() {
+            console.log('🚀 Login page initialized');
+            
+            // Setup form submission
+            const form = document.getElementById('login-form');
+            form.addEventListener('submit', handleLogin);
+
+            // Setup password toggle
+            const toggleButton = document.getElementById('toggle-password');
+            toggleButton.addEventListener('click', togglePasswordVisibility);
+
+            // Setup demo account clicks
+            setupDemoCards();
+
+            // Add animations
+            animateElements();
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('remember-me').checked;
+
+            // Validate inputs
+            if (!email || !password) {
+                showError('Please fill in all fields');
+                return;
+            }
+
+            // Show loading state
+            const loginButton = event.target.querySelector('button[type="submit"]');
+            const originalText = loginButton.innerHTML;
+            loginButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Signing In...';
+            loginButton.disabled = true;
+
+            try {
+                // Attempt login
+                const result = await authService.login(email, password, rememberMe);
+                
+                if (result.success) {
+                    showSuccess('Login successful! Redirecting...');
+                    
+                    // Initialize demo data for new users
+                    if (authService.initializeDemoData) {
+                        authService.initializeDemoData();
+                    }
+                    
+                    // Redirect to dashboard
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1500);
+                } else {
+                    showError(result.message || 'Login failed');
+                    loginButton.innerHTML = originalText;
+                    loginButton.disabled = false;
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showError('An unexpected error occurred');
+                loginButton.innerHTML = originalText;
+                loginButton.disabled = false;
+            }
+        }
+
+        function demoLogin(role) {
+            console.log('🎭 Demo login for role:', role);
+            
+            // Show loading state
+            const demoCards = document.querySelectorAll('.demo-card');
+            demoCards.forEach(card => {
+                card.style.opacity = '0.6';
+                card.style.pointerEvents = 'none';
+            });
+
+            try {
+                const result = authService.demoLogin(role);
+                
+                if (result.success) {
+                    // Initialize demo data
+                    if (authService.initializeDemoData) {
+                        authService.initializeDemoData();
+                    }
+                    
+                    // Show success message
+                    showSuccess(`Logging in as ${role}...`);
+                    
+                    // Redirect to dashboard
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                } else {
+                    showError('Demo login failed');
+                    resetDemoCards();
+                }
+            } catch (error) {
+                console.error('Demo login error:', error);
+                showError('Demo login failed');
+                resetDemoCards();
+            }
+        }
+
+        function quickLogin() {
+            // Pre-fill test credentials and submit
+            document.getElementById('email').value = 'test@invoicegen.com';
+            document.getElementById('password').value = 'test123';
+            document.getElementById('remember-me').checked = true;
+            
+            // Submit the form
+            document.getElementById('login-form').dispatchEvent(new Event('submit'));
+        }
+
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const toggleButton = document.getElementById('toggle-password');
+            const icon = toggleButton.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                passwordInput.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+
+        function showError(message) {
+            const container = document.getElementById('message-container');
+            const errorDiv = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            
+            errorText.textContent = message;
+            errorDiv.classList.remove('hidden');
+            container.classList.remove('hidden');
+            
+            // Hide success message if showing
+            document.getElementById('success-message').classList.add('hidden');
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                hideMessages();
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const container = document.getElementById('message-container');
+            const successDiv = document.getElementById('success-message');
+            const successText = document.getElementById('success-text');
+            
+            successText.textContent = message;
+            successDiv.classList.remove('hidden');
+            container.classList.remove('hidden');
+            
+            // Hide error message if showing
+            document.getElementById('error-message').classList.add('hidden');
+        }
+
+        function hideMessages() {
+            document.getElementById('message-container').classList.add('hidden');
+            document.getElementById('error-message').classList.add('hidden');
+            document.getElementById('success-message').classList.add('hidden');
+        }
+
+        function resetDemoCards() {
+            const demoCards = document.querySelectorAll('.demo-card');
+            demoCards.forEach(card => {
+                card.style.opacity = '1';
+                card.style.pointerEvents = 'auto';
+            });
+        }
+
+        function setupDemoCards() {
+            const demoCards = document.querySelectorAll('.demo-card');
+            demoCards.forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    anime({
+                        targets: card,
+                        scale: 1.02,
+                        duration: 200,
+                        easing: 'easeOutQuad'
+                    });
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    anime({
+                        targets: card,
+                        scale: 1,
+                        duration: 200,
+                        easing: 'easeOutQuad'
+                    });
+                });
+            });
+        }
+
+        function animateElements() {
+            // Animate form elements
+            anime({
+                targets: '.form-input',
+                translateY: [20, 0],
+                opacity: [0, 1],
+                delay: anime.stagger(100),
+                duration: 600,
+                easing: 'easeOutQuad'
+            });
+
+            // Animate demo cards
+            anime({
+                targets: '.demo-card',
+                scale: [0.9, 1],
+                opacity: [0, 1],
+                delay: anime.stagger(100, {start: 300}),
+                duration: 500,
+                easing: 'easeOutQuad'
+            });
+
+            // Animate main containers
+            anime({
+                targets: '.glass-effect',
+                translateY: [30, 0],
+                opacity: [0, 1],
+                delay: 100,
+                duration: 800,
+                easing: 'easeOutQuad'
+            });
+        }
+
+        // Add CSS animations for background
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes blob {
+                0% { transform: translate(0px, 0px) scale(1); }
+                33% { transform: translate(30px, -50px) scale(1.1); }
+                66% { transform: translate(-20px, 20px) scale(0.9); }
+                100% { transform: translate(0px, 0px) scale(1); }
+            }
+            .animate-blob {
+                animation: blob 7s infinite;
+            }
+            .animation-delay-2000 {
+                animation-delay: 2s;
+            }
+            .animation-delay-4000 {
+                animation-delay: 4s;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

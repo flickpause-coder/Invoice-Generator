@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Dashboard - InvoiceGen</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .hover-lift {
+            transition: all 0.3s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        .stat-card {
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+        .stat-card:hover::before {
+            left: 100%;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        .chart-container {
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .user-menu {
+            transform: translateY(-10px);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.2s ease;
+        }
+        .user-menu.show {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .subscription-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        .role-badge {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .notification-dot {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .activity-item {
+            transition: all 0.2s ease;
+        }
+        .activity-item:hover {
+            background-color: #f8fafc;
+            transform: translateX(4px);
+        }
+        .chart-controls {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            padding: 8px;
+        }
+        .metric-card {
+            background: linear-gradient(135deg, #ffffff, #f8fafc);
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+        }
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .real-time-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75rem;
+            color: #10b981;
+        }
+        .real-time-dot {
+            width: 6px;
+            height: 6px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-2xl font-bold text-gray-900">InvoiceGen</h1>
+                    </div>
+                </div>
+                
+                <!-- Navigation Links -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="index-enhanced.html" class="nav-link text-blue-600 font-medium">Dashboard</a>
+                    <a href="invoices.html" class="nav-link text-gray-600 hover:text-gray-900">Invoices</a>
+                    <a href="clients.html" class="nav-link text-gray-600 hover:text-gray-900">Clients</a>
+                    <a href="invoice-design.html" class="nav-link text-gray-600 hover:text-gray-900">Invoice Design</a>
+                    <a href="settings.html" class="nav-link text-gray-600 hover:text-gray-900">Settings</a>
+                </div>
+
+                <!-- User Menu -->
+                <div class="relative">
+                    <button id="user-menu-button" class="flex items-center space-x-3 text-gray-700 hover:text-gray-900 focus:outline-none">
+                        <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                            <span id="user-initials" class="text-white text-sm font-medium">TU</span>
+                        </div>
+                        <div class="hidden md:block text-left">
+                            <div id="user-name" class="text-sm font-medium">Test User</div>
+                            <div id="user-role" class="text-xs text-gray-500">Admin</div>
+                        </div>
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <div id="user-menu" class="user-menu absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
+                        <div class="px-4 py-2 border-b border-gray-200">
+                            <div class="text-sm font-medium text-gray-900" id="dropdown-user-name">Test User</div>
+                            <div class="text-xs text-gray-500" id="dropdown-user-email">test@invoicegen.com</div>
+                        </div>
+                        <a href="settings.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-cog mr-2"></i>Settings
+                        </a>
+                        <a href="subscription.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 bg-blue-50 text-blue-700">
+                            <i class="fas fa-credit-card mr-2"></i>Billing
+                        </a>
+                        <button onclick="logout()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header Section -->
+        <div class="mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-900">Enhanced Dashboard</h2>
+                    <p class="text-gray-600 mt-2">Real-time insights and advanced analytics for your business</p>
+                </div>
+                <div class="mt-4 sm:mt-0 flex items-center space-x-4">
+                    <div class="real-time-indicator">
+                        <div class="real-time-dot"></div>
+                        Live Updates
+                    </div>
+                    <div class="chart-controls flex items-center space-x-2">
+                        <select id="period-selector" class="text-sm border border-gray-300 rounded-md px-3 py-1 focus:ring-2 focus:ring-blue-500">
+                            <option value="7d">Last 7 days</option>
+                            <option value="30d" selected>Last 30 days</option>
+                            <option value="90d">Last 90 days</option>
+                            <option value="1y">Last year</option>
+                        </select>
+                        <button id="manual-refresh" class="p-1 text-gray-600 hover:text-gray-900 transition-colors">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <label class="flex items-center text-sm">
+                            <input type="checkbox" id="auto-refresh-toggle" checked class="mr-1">
+                            Auto
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Total Revenue -->
+            <div class="metric-card stat-card" onclick="filterByStatus('all')">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-dollar-sign text-white text-xl"></i>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm text-green-600 font-medium">+12.5%</div>
+                        <div class="text-xs text-gray-500">vs last month</div>
+                    </div>
+                </div>
+                <div class="metric-value" id="total-revenue">$0</div>
+                <div class="text-sm text-gray-600 mt-1">Total Revenue</div>
+                <div class="mt-3 text-xs text-gray-500">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    All paid invoices this period
+                </div>
+            </div>
+
+            <!-- Pending Amount -->
+            <div class="metric-card stat-card" onclick="filterByStatus('sent')">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-clock text-white text-xl"></i>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm text-blue-600 font-medium">+8.2%</div>
+                        <div class="text-xs text-gray-500">vs last month</div>
+                    </div>
+                </div>
+                <div class="metric-value" id="pending-amount">$0</div>
+                <div class="text-sm text-gray-600 mt-1">Pending Amount</div>
+                <div class="mt-3 text-xs text-gray-500">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Awaiting payment
+                </div>
+            </div>
+
+            <!-- Overdue Amount -->
+            <div class="metric-card stat-card" onclick="filterByStatus('overdue')">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-rose-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-exclamation-triangle text-white text-xl"></i>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm text-red-600 font-medium">-15.3%</div>
+                        <div class="text-xs text-gray-500">vs last month</div>
+                    </div>
+                </div>
+                <div class="metric-value" id="overdue-amount">$0</div>
+                <div class="text-sm text-gray-600 mt-1">Overdue Amount</div>
+                <div class="mt-3 text-xs text-gray-500">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Past due date
+                </div>
+            </div>
+
+            <!-- Total Clients -->
+            <div class="metric-card stat-card" onclick="navigateToClients()">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-violet-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-users text-white text-xl"></i>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm text-purple-600 font-medium">+3</div>
+                        <div class="text-xs text-gray-500">this month</div>
+                    </div>
+                </div>
+                <div class="metric-value" id="total-clients">0</div>
+                <div class="text-sm text-gray-600 mt-1">Active Clients</div>
+                <div class="mt-3 text-xs text-gray-500">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    With active invoices
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Revenue Chart -->
+            <div class="chart-container">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Revenue Analytics</h3>
+                    <div class="flex space-x-2">
+                        <button class="chart-type-btn px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-md" data-chart-type="line">Line</button>
+                        <button class="chart-type-btn px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-md" data-chart-type="bar">Bar</button>
+                    </div>
+                </div>
+                <div id="revenue-chart" style="height: 300px;"></div>
+            </div>
+
+            <!-- Client Analytics -->
+            <div class="chart-container">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Client Revenue Distribution</h3>
+                <div id="client-chart" style="height: 300px;"></div>
+            </div>
+        </div>
+
+        <!-- Additional Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Invoice Status -->
+            <div class="chart-container">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Invoice Status Overview</h3>
+                <div id="status-chart" style="height: 300px;"></div>
+            </div>
+
+            <!-- Growth Metrics -->
+            <div class="chart-container">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Business Growth Metrics</h3>
+                <div id="growth-chart" style="height: 300px;"></div>
+            </div>
+        </div>
+
+        <!-- Dashboard Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Recent Activity -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-semibold text-gray-900">
+                                <i class="fas fa-history mr-2"></i>
+                                Recent Activity
+                            </h3>
+                            <button class="text-sm text-blue-600 hover:text-blue-500">
+                                View All
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div id="recent-activity" class="space-y-3">
+                            <!-- Activity items will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications & Quick Actions -->
+            <div class="space-y-6">
+                <!-- Notifications -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="p-4 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-semibold text-gray-900">
+                                <i class="fas fa-bell mr-2"></i>
+                                Notifications
+                            </h3>
+                            <span class="notification-dot w-2 h-2 bg-blue-500 rounded-full"></span>
+                        </div>
+                    </div>
+                    <div id="notifications-list" class="max-h-64 overflow-y-auto">
+                        <!-- Notifications will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-bolt mr-2"></i>
+                        Quick Actions
+                    </h3>
+                    <div class="space-y-3">
+                        <button onclick="createInvoice()" class="w-full flex items-center justify-center bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-plus mr-2"></i>
+                            Create Invoice
+                        </button>
+                        <button onclick="addClient()" class="w-full flex items-center justify-center bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
+                            <i class="fas fa-user-plus mr-2"></i>
+                            Add Client
+                        </button>
+                        <button onclick="generateReport()" class="w-full flex items-center justify-center bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors">
+                            <i class="fas fa-chart-bar mr-2"></i>
+                            Generate Report
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Subscription Info -->
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">
+                            <i class="fas fa-crown mr-2 text-blue-600"></i>
+                            Subscription
+                        </h3>
+                        <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">Starter</span>
+                    </div>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Invoices used:</span>
+                            <span class="font-medium">18/25</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Clients:</span>
+                            <span class="font-medium">12/50</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-600 h-2 rounded-full" style="width: 72%"></div>
+                        </div>
+                        <button onclick="upgradePlan()" class="w-full text-center text-blue-600 hover:text-blue-500 text-sm font-medium">
+                            Upgrade Plan →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-gray-400">© 2025 InvoiceGen. Professional invoice management for modern businesses.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="auth-improved.js"></script>
+    <script src="dashboard-enhanced.js"></script>
+    <script>
+        // Global functions for navigation and actions
+        function logout() {
+            if (window.ImprovedAuthService) {
+                window.ImprovedAuthService.logout();
+            } else {
+                localStorage.clear();
+                window.location.href = 'login.html';
+            }
+        }
+
+        function filterByStatus(status) {
+            // Navigate to invoices page with filter
+            const url = status === 'all' ? 'invoices.html' : `invoices.html?filter=${status}`;
+            window.location.href = url;
+        }
+
+        function navigateToClients() {
+            window.location.href = 'clients.html';
+        }
+
+        function createInvoice() {
+            window.location.href = 'create-invoice.html';
+        }
+
+        function addClient() {
+            window.location.href = 'clients.html?action=add';
+        }
+
+        function generateReport() {
+            alert('📊 Report generation feature coming soon!');
+        }
+
+        function upgradePlan() {
+            window.location.href = 'subscription.html';
+        }
+
+        // User menu functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userMenu = document.getElementById('user-menu');
+
+            userMenuButton.addEventListener('click', function() {
+                userMenu.classList.toggle('show');
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
+                    userMenu.classList.remove('show');
+                }
+            });
+
+            // Update user info
+            const authService = window.ImprovedAuthService || window.AuthService;
+            if (authService && authService.getCurrentUser()) {
+                const user = authService.getCurrentUser();
+                document.getElementById('user-initials').textContent = 
+                    (user.firstName[0] + user.lastName[0]).toUpperCase();
+                document.getElementById('user-name').textContent = 
+                    `${user.firstName} ${user.lastName}`;
+                document.getElementById('user-role').textContent = 
+                    user.role.charAt(0).toUpperCase() + user.role.slice(1);
+                document.getElementById('dropdown-user-name').textContent = 
+                    `${user.firstName} ${user.lastName}`;
+                document.getElementById('dropdown-user-email').textContent = user.email;
+            }
+        });
+    </script>
+</body>
+</html>

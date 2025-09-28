@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Access - InvoiceGen</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .hover-lift {
+            transition: all 0.3s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        .test-card {
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+        }
+        .test-card:hover {
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+        }
+        .quick-access {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .demo-badge {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <div class="quick-access text-white py-12">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <h1 class="text-4xl font-bold mb-4">
+                <i class="fas fa-rocket mr-3"></i>
+                InvoiceGen Test Access
+            </h1>
+            <p class="text-xl opacity-90">Skip the login process and test features immediately</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-6xl mx-auto px-4 py-12">
+        <!-- Quick Access Section -->
+        <div class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">🚀 Instant Access</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Direct Dashboard Access -->
+                <div class="test-card rounded-xl p-6 hover-lift" onclick="bypassToDashboard()">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-tachometer-alt text-blue-600 text-xl"></i>
+                        </div>
+                        <span class="demo-badge">RECOMMENDED</span>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Direct Dashboard</h3>
+                    <p class="text-gray-600 mb-4">Skip login and go straight to the main dashboard with admin privileges</p>
+                    <div class="text-sm text-gray-500">
+                        <i class="fas fa-user-shield mr-2"></i>Admin Account
+                        <span class="ml-4"><i class="fas fa-rocket mr-2"></i>Instant Access</span>
+                    </div>
+                </div>
+
+                <!-- Test All Features -->
+                <div class="test-card rounded-xl p-6 hover-lift" onclick="testAllFeatures()">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-flask text-green-600 text-xl"></i>
+                        </div>
+                        <span class="demo-badge">TESTING</span>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Feature Testing</h3>
+                    <p class="text-gray-600 mb-4">Access a pre-populated account with sample data for comprehensive testing</p>
+                    <div class="text-sm text-gray-500">
+                        <i class="fas fa-database mr-2"></i>Sample Data
+                        <span class="ml-4"><i class="fas fa-check-circle mr-2"></i>All Features</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Demo Accounts -->
+        <div class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">👥 Demo Accounts</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Admin Account -->
+                <div class="test-card rounded-xl p-4 hover-lift text-center" onclick="loginAsRole('admin')">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-user-shield text-red-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Admin</h3>
+                    <p class="text-sm text-gray-600 mb-2">Full system access</p>
+                    <div class="text-xs text-gray-500">
+                        <i class="fas fa-crown mr-1"></i>All Permissions
+                    </div>
+                </div>
+
+                <!-- Accountant Account -->
+                <div class="test-card rounded-xl p-4 hover-lift text-center" onclick="loginAsRole('accountant')">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-calculator text-blue-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Accountant</h3>
+                    <p class="text-sm text-gray-600 mb-2">Financial management</p>
+                    <div class="text-xs text-gray-500">
+                        <i class="fas fa-chart-line mr-1"></i>Limited Access
+                    </div>
+                </div>
+
+                <!-- Staff Account -->
+                <div class="test-card rounded-xl p-4 hover-lift text-center" onclick="loginAsRole('staff')">
+                    <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-users text-yellow-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Staff</h3>
+                    <p class="text-sm text-gray-600 mb-2">Basic operations</p>
+                    <div class="text-xs text-gray-500">
+                        <i class="fas fa-user mr-1"></i>Standard Access
+                    </div>
+                </div>
+
+                <!-- Viewer Account -->
+                <div class="test-card rounded-xl p-4 hover-lift text-center" onclick="loginAsRole('viewer')">
+                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-eye text-gray-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Viewer</h3>
+                    <p class="text-sm text-gray-600 mb-2">Read-only access</p>
+                    <div class="text-xs text-gray-500">
+                        <i class="fas fa-lock mr-1"></i>View Only
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Credentials -->
+        <div class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">🔑 Test Credentials</h2>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="font-semibold text-gray-900 mb-3">Primary Test Account</h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Email:</span>
+                                <span class="font-mono bg-gray-100 px-2 py-1 rounded">test@invoicegen.com</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Password:</span>
+                                <span class="font-mono bg-gray-100 px-2 py-1 rounded">test123</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Role:</span>
+                                <span class="text-blue-600 font-medium">Admin</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Plan:</span>
+                                <span class="text-green-600 font-medium">Starter</span>
+                            </div>
+                        </div>
+                        <button onclick="copyCredentials()" class="mt-3 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                            <i class="fas fa-copy mr-2"></i>Copy Credentials
+                        </button>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-900 mb-3">Quick Access</h3>
+                        <div class="space-y-2">
+                            <button onclick="loginWithCredentials()" class="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
+                                <i class="fas fa-sign-in-alt mr-2"></i>Login with Test Account
+                            </button>
+                            <button onclick="bypassAuthentication()" class="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors">
+                                <i class="fas fa-magic mr-2"></i>Bypass Login (Dev Mode)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feature Testing Guide -->
+        <div class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">🧪 Feature Testing Guide</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dashboard Testing -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-tachometer-alt text-blue-600 text-xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">Dashboard</h3>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• Check revenue statistics</li>
+                        <li>• Test chart interactions</li>
+                        <li>• Verify recent invoices</li>
+                        <li>• Test navigation links</li>
+                    </ul>
+                    <button onclick="testFeature('dashboard')" class="mt-4 w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                        Test Dashboard
+                    </button>
+                </div>
+
+                <!-- Invoice Testing -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-file-invoice text-green-600 text-xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">Invoices</h3>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• Create new invoice</li>
+                        <li>• Edit existing invoice</li>
+                        <li>• Test status changes</li>
+                        <li>• Verify PDF generation</li>
+                    </ul>
+                    <button onclick="testFeature('invoices')" class="mt-4 w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors text-sm">
+                        Test Invoices
+                    </button>
+                </div>
+
+                <!-- Client Testing -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-users text-purple-600 text-xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">Clients</h3>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• Add new client</li>
+                        <li>• Edit client details</li>
+                        <li>• Test client search</li>
+                        <li>• Verify client-invoice link</li>
+                    </ul>
+                    <button onclick="testFeature('clients')" class="mt-4 w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors text-sm">
+                        Test Clients
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Development Tools -->
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">🔧 Development Tools</h2>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-database text-red-600 text-xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-gray-900 mb-2">Reset Data</h3>
+                        <p class="text-sm text-gray-600 mb-3">Clear all test data and start fresh</p>
+                        <button onclick="resetTestData()" class="w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors text-sm">
+                            Reset All Data
+                        </button>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-bug text-yellow-600 text-xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-gray-900 mb-2">Debug Mode</h3>
+                        <p class="text-sm text-gray-600 mb-3">Enable console logging and debugging</p>
+                        <button onclick="toggleDebugMode()" class="w-full bg-yellow-600 text-white py-2 px-4 rounded-lg hover:bg-yellow-700 transition-colors text-sm">
+                            Toggle Debug
+                        </button>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-file-alt text-indigo-600 text-xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-gray-900 mb-2">Documentation</h3>
+                        <p class="text-sm text-gray-600 mb-3">View complete project documentation</p>
+                        <button onclick="openDocumentation()" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors text-sm">
+                            View Docs
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8 mt-12">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <p class="text-gray-400">InvoiceGen Test Access Portal | Development Mode</p>
+        </div>
+    </footer>
+
+    <script>
+        // Authentication bypass functions
+        function bypassToDashboard() {
+            // Set auth token and redirect to dashboard
+            localStorage.setItem('authToken', 'bypass-token-' + Date.now());
+            localStorage.setItem('currentUser', JSON.stringify({
+                id: 'test-user-' + Date.now(),
+                email: 'test@invoicegen.com',
+                firstName: 'Test',
+                lastName: 'User',
+                role: 'admin',
+                subscription: {
+                    tier: 'starter',
+                    status: 'active'
+                }
+            }));
+            window.location.href = 'index.html';
+        }
+
+        function testAllFeatures() {
+            // Create comprehensive test data
+            createTestData();
+            bypassToDashboard();
+        }
+
+        function loginAsRole(role) {
+            const roleData = {
+                admin: { name: 'Admin User', permissions: 'full' },
+                accountant: { name: 'Accountant User', permissions: 'financial' },
+                staff: { name: 'Staff User', permissions: 'standard' },
+                viewer: { name: 'Viewer User', permissions: 'readonly' }
+            };
+
+            const userData = roleData[role];
+            localStorage.setItem('authToken', 'demo-token-' + role + '-' + Date.now());
+            localStorage.setItem('currentUser', JSON.stringify({
+                id: role + '-user-' + Date.now(),
+                email: role + '@invoicegen.com',
+                firstName: userData.name.split(' ')[0],
+                lastName: userData.name.split(' ')[1],
+                role: role,
+                subscription: {
+                    tier: role === 'admin' ? 'business' : 'starter',
+                    status: 'active'
+                }
+            }));
+            window.location.href = 'index.html';
+        }
+
+        function loginWithCredentials() {
+            const email = 'test@invoicegen.com';
+            const password = 'test123';
+            
+            // Simulate login process
+            localStorage.setItem('authToken', 'auth-token-' + Date.now());
+            localStorage.setItem('currentUser', JSON.stringify({
+                id: 'authenticated-user-' + Date.now(),
+                email: email,
+                firstName: 'Test',
+                lastName: 'User',
+                role: 'admin',
+                subscription: {
+                    tier: 'starter',
+                    status: 'active'
+                }
+            }));
+            window.location.href = 'index.html';
+        }
+
+        function bypassAuthentication() {
+            // Developer mode bypass
+            console.log('🚀 Developer Mode: Bypassing authentication');
+            localStorage.setItem('devMode', 'true');
+            localStorage.setItem('authToken', 'dev-bypass-token');
+            localStorage.setItem('currentUser', JSON.stringify({
+                id: 'dev-user',
+                email: 'dev@invoicegen.com',
+                firstName: 'Developer',
+                lastName: 'Mode',
+                role: 'admin',
+                subscription: {
+                    tier: 'enterprise',
+                    status: 'active'
+                }
+            }));
+            window.location.href = 'index.html';
+        }
+
+        function copyCredentials() {
+            const credentials = `Email: test@invoicegen.com\nPassword: test123`;
+            navigator.clipboard.writeText(credentials).then(() => {
+                alert('✅ Credentials copied to clipboard!');
+            });
+        }
+
+        function testFeature(feature) {
+            const routes = {
+                dashboard: 'index.html',
+                invoices: 'invoices.html',
+                clients: 'clients.html'
+            };
+            
+            if (routes[feature]) {
+                // Ensure user is logged in
+                if (!localStorage.getItem('authToken')) {
+                    bypassToDashboard();
+                    return;
+                }
+                window.location.href = routes[feature];
+            }
+        }
+
+        function createTestData() {
+            // Create sample clients
+            const sampleClients = [
+                {
+                    id: 'client-001',
+                    name: 'Acme Corporation',
+                    email: 'contact@acmecorp.com',
+                    phone: '+1-555-0101',
+                    address: { city: 'New York', state: 'NY' }
+                },
+                {
+                    id: 'client-002',
+                    name: 'Tech Solutions Ltd',
+                    email: 'info@techsolutions.com',
+                    phone: '+1-555-0102',
+                    address: { city: 'San Francisco', state: 'CA' }
+                },
+                {
+                    id: 'client-003',
+                    name: 'Global Industries',
+                    email: 'business@globalind.com',
+                    phone: '+1-555-0103',
+                    address: { city: 'Chicago', state: 'IL' }
+                }
+            ];
+
+            // Create sample invoices
+            const sampleInvoices = [
+                {
+                    id: 'INV-001',
+                    clientId: 'client-001',
+                    number: 'INV-001',
+                    date: '2025-09-01',
+                    dueDate: '2025-09-30',
+                    status: 'paid',
+                    total: 2500.00,
+                    items: [{ description: 'Web Design Services', quantity: 1, rate: 2500.00 }]
+                },
+                {
+                    id: 'INV-002',
+                    clientId: 'client-002',
+                    number: 'INV-002',
+                    date: '2025-09-15',
+                    dueDate: '2025-10-15',
+                    status: 'sent',
+                    total: 1800.00,
+                    items: [{ description: 'Consulting Services', quantity: 20, rate: 90.00 }]
+                },
+                {
+                    id: 'INV-003',
+                    clientId: 'client-003',
+                    number: 'INV-003',
+                    date: '2025-08-20',
+                    dueDate: '2025-09-20',
+                    status: 'overdue',
+                    total: 3200.00,
+                    items: [{ description: 'Software Development', quantity: 1, rate: 3200.00 }]
+                }
+            ];
+
+            localStorage.setItem('clients', JSON.stringify(sampleClients));
+            localStorage.setItem('invoices', JSON.stringify(sampleInvoices));
+            console.log('✅ Test data created successfully');
+        }
+
+        function resetTestData() {
+            if (confirm('⚠️ This will clear all test data. Are you sure?')) {
+                localStorage.clear();
+                console.log('🗑️ All test data cleared');
+                alert('✅ Test data reset complete');
+            }
+        }
+
+        function toggleDebugMode() {
+            const currentMode = localStorage.getItem('debugMode');
+            const newMode = currentMode === 'true' ? 'false' : 'true';
+            localStorage.setItem('debugMode', newMode);
+            
+            if (newMode === 'true') {
+                console.log('🐛 Debug mode enabled');
+                alert('✅ Debug mode enabled - Check browser console');
+            } else {
+                console.log('🔇 Debug mode disabled');
+                alert('❌ Debug mode disabled');
+            }
+        }
+
+        function openDocumentation() {
+            window.open('INVOICEGEN_CONTINUATION_GUIDE.md', '_blank');
+        }
+
+        // Auto-create test data on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 InvoiceGen Test Access Loaded');
+            console.log('📋 Available functions:');
+            console.log('  • bypassToDashboard() - Instant dashboard access');
+            console.log('  • testAllFeatures() - Access with sample data');
+            console.log('  • loginAsRole(role) - Test specific user roles');
+            console.log('  • bypassAuthentication() - Developer mode');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - InvoiceGen</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .hover-lift {
+            transition: all 0.3s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        .user-menu {
+            transform: translateY(-10px);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.2s ease;
+        }
+        .user-menu.show {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .tab-button {
+            transition: all 0.2s ease;
+        }
+        .tab-button.active {
+            background: #3b82f6;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-2xl font-bold text-gray-900">InvoiceGen</h1>
+                    </div>
+                </div>
+                
+                <!-- Navigation Links -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="index.html" class="nav-link text-gray-600 hover:text-gray-900">Dashboard</a>
+                    <a href="invoices.html" class="nav-link text-gray-600 hover:text-gray-900">Invoices</a>
+                    <a href="clients.html" class="nav-link text-gray-600 hover:text-gray-900">Clients</a>
+                    <a href="invoice-design.html" class="nav-link text-gray-600 hover:text-gray-900">Invoice Design</a>
+                    <a href="settings.html" class="nav-link text-blue-600 font-medium">Settings</a>
+                </div>
+
+                <!-- User Menu -->
+                <div class="relative">
+                    <button id="user-menu-button" class="flex items-center space-x-3 text-gray-700 hover:text-gray-900 focus:outline-none">
+                        <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                            <span class="text-white text-sm font-medium">TU</span>
+                        </div>
+                        <div class="hidden md:block text-left">
+                            <div class="text-sm font-medium">Test User</div>
+                            <div class="text-xs text-gray-500">Admin</div>
+                        </div>
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <div id="user-menu" class="user-menu absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
+                        <div class="px-4 py-2 border-b border-gray-200">
+                            <div class="text-sm font-medium text-gray-900">Test User</div>
+                            <div class="text-xs text-gray-500">test@invoicegen.com</div>
+                        </div>
+                        <a href="settings.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 bg-blue-50 text-blue-700">
+                            <i class="fas fa-cog mr-2"></i>Settings
+                        </a>
+                        <a href="subscription.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-credit-card mr-2"></i>Billing
+                        </a>
+                        <button onclick="logout()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Settings</h1>
+            <p class="text-gray-600 mt-2">Manage your account preferences and system configuration</p>
+        </div>
+
+        <!-- Settings Navigation -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
+            <div class="border-b border-gray-200">
+                <nav class="flex space-x-8 px-6">
+                    <button onclick="showTab('profile')" class="tab-button active py-4 px-2 border-b-2 border-transparent font-medium text-sm">
+                        <i class="fas fa-user mr-2"></i>Profile
+                    </button>
+                    <button onclick="showTab('company')" class="tab-button py-4 px-2 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-building mr-2"></i>Company
+                    </button>
+                    <button onclick="showTab('notifications')" class="tab-button py-4 px-2 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-bell mr-2"></i>Notifications
+                    </button>
+                    <button onclick="showTab('billing')" class="tab-button py-4 px-2 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-credit-card mr-2"></i>Billing
+                    </button>
+                    <button onclick="showTab('security')" class="tab-button py-4 px-2 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-shield-alt mr-2"></i>Security
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Profile Tab -->
+            <div id="profile-tab" class="tab-content active p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-6">Profile Settings</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                        <input type="text" id="first-name" value="Test" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                        <input type="text" id="last-name" value="User" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input type="email" id="email" value="test@invoicegen.com" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                        <input type="tel" id="phone" value="+1 (555) 123-4567" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
+                        <div class="flex items-center space-x-4">
+                            <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                                <span class="text-white text-xl font-medium">TU</span>
+                            </div>
+                            <div>
+                                <input type="file" id="profile-pic" accept="image/*" class="hidden">
+                                <button onclick="document.getElementById('profile-pic').click()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                    <i class="fas fa-upload mr-2"></i>Upload Photo
+                                </button>
+                                <p class="text-sm text-gray-500 mt-1">JPG, PNG up to 5MB</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <button onclick="saveProfile()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-save mr-2"></i>Save Profile
+                    </button>
+                </div>
+            </div>
+
+            <!-- Company Tab -->
+            <div id="company-tab" class="tab-content p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-6">Company Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
+                        <input type="text" id="company-name" value="Your Company Name" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Industry</label>
+                        <select id="industry" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Select Industry</option>
+                            <option value="technology">Technology</option>
+                            <option value="consulting">Consulting</option>
+                            <option value="design">Design</option>
+                            <option value="marketing">Marketing</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                        <textarea id="company-address" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Your company address"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">City</label>
+                        <input type="text" id="company-city" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">ZIP Code</label>
+                        <input type="text" id="company-zip" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tax ID</label>
+                        <input type="text" id="tax-id" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Website</label>
+                        <input type="url" id="company-website" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <button onclick="saveCompany()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-save mr-2"></i>Save Company Info
+                    </button>
+                </div>
+            </div>
+
+            <!-- Notifications Tab -->
+            <div id="notifications-tab" class="tab-content p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-6">Notification Preferences</h3>
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900">Email Notifications</h4>
+                            <p class="text-sm text-gray-600">Receive email notifications for invoice updates</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="email-notifications" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900">SMS Notifications</h4>
+                            <p class="text-sm text-gray-600">Receive SMS notifications for urgent updates</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="sms-notifications" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900">Payment Reminders</h4>
+                            <p class="text-sm text-gray-600">Send automatic payment reminders to clients</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="payment-reminders" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900">Weekly Reports</h4>
+                            <p class="text-sm text-gray-600">Receive weekly financial reports</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="weekly-reports" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <button onclick="saveNotifications()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-save mr-2"></i>Save Preferences
+                    </button>
+                </div>
+            </div>
+
+            <!-- Billing Tab -->
+            <div id="billing-tab" class="tab-content p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-6">Billing & Subscription</h3>
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="text-lg font-semibold text-blue-900">Pro Plan</h4>
+                            <p class="text-blue-700">Unlimited invoices and advanced features</p>
+                            <p class="text-2xl font-bold text-blue-900 mt-2">$29/month</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-check mr-1"></i> Active
+                            </span>
+                            <p class="text-sm text-blue-600 mt-2">Next billing: Oct 1, 2024</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Payment Method</h4>
+                        <div class="bg-white border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-center">
+                                <i class="fab fa-cc-visa text-2xl text-blue-600 mr-3"></i>
+                                <div>
+                                    <p class="font-medium text-gray-900">•••• •••• •••• 4242</p>
+                                    <p class="text-sm text-gray-600">Expires 12/2025</p>
+                                </div>
+                            </div>
+                            <button onclick="updatePaymentMethod()" class="mt-3 text-blue-600 hover:text-blue-800 text-sm">
+                                Update Payment Method
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Billing History</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                                <div>
+                                    <p class="font-medium text-gray-900">Sep 1, 2024</p>
+                                    <p class="text-sm text-gray-600">Pro Plan</p>
+                                </div>
+                                <p class="font-medium text-gray-900">$29.00</p>
+                            </div>
+                            <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                                <div>
+                                    <p class="font-medium text-gray-900">Aug 1, 2024</p>
+                                    <p class="text-sm text-gray-600">Pro Plan</p>
+                                </div>
+                                <p class="font-medium text-gray-900">$29.00</p>
+                            </div>
+                            <div class="flex justify-between items-center py-2">
+                                <div>
+                                    <p class="font-medium text-gray-900">Jul 1, 2024</p>
+                                    <p class="text-sm text-gray-600">Pro Plan</p>
+                                </div>
+                                <p class="font-medium text-gray-900">$29.00</p>
+                            </div>
+                        </div>
+                        <button onclick="viewAllInvoices()" class="mt-3 text-blue-600 hover:text-blue-800 text-sm">
+                            View All Invoices
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <button onclick="changePlan()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors mr-3">
+                        <i class="fas fa-exchange-alt mr-2"></i>Change Plan
+                    </button>
+                    <button onclick="cancelSubscription()" class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors">
+                        <i class="fas fa-times mr-2"></i>Cancel Subscription
+                    </button>
+                </div>
+            </div>
+
+            <!-- Security Tab -->
+            <div id="security-tab" class="tab-content p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-6">Security Settings</h3>
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Change Password</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+                                <input type="password" id="current-password" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                                <input type="password" id="new-password" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <button onclick="changePassword()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-key mr-2"></i>Change Password
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Two-Factor Authentication</h4>
+                        <div class="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-4">
+                            <div>
+                                <p class="font-medium text-green-900">2FA Status: Enabled</p>
+                                <p class="text-sm text-green-700">Your account is protected with two-factor authentication</p>
+                            </div>
+                            <button onclick="manage2FA()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                                Manage 2FA
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Login History</h4>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between py-3 border-b border-gray-200">
+                                <div>
+                                    <p class="font-medium text-gray-900">Current Session</p>
+                                    <p class="text-sm text-gray-600">Chrome on Windows - Sep 27, 2024 10:30 AM</p>
+                                </div>
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Active</span>
+                            </div>
+                            <div class="flex items-center justify-between py-3 border-b border-gray-200">
+                                <div>
+                                    <p class="font-medium text-gray-900">Previous Session</p>
+                                    <p class="text-sm text-gray-600">Safari on macOS - Sep 26, 2024 2:15 PM</p>
+                                </div>
+                                <button onclick="revokeSession('session1')" class="text-red-600 hover:text-red-800 text-sm">Revoke</button>
+                            </div>
+                            <div class="flex items-center justify-between py-3">
+                                <div>
+                                    <p class="font-medium text-gray-900">Mobile Session</p>
+                                    <p class="text-sm text-gray-600">Chrome on Android - Sep 25, 2024 8:45 PM</p>
+                                </div>
+                                <button onclick="revokeSession('session2')" class="text-red-600 hover:text-red-800 text-sm">Revoke</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // User menu functionality
+        document.getElementById('user-menu-button').addEventListener('click', function() {
+            document.getElementById('user-menu').classList.toggle('show');
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const userMenu = document.getElementById('user-menu');
+            const userMenuButton = document.getElementById('user-menu-button');
+            
+            if (!userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
+                userMenu.classList.remove('show');
+            }
+        });
+
+        // Tab functionality
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+                button.classList.add('text-gray-500', 'hover:text-gray-700');
+            });
+            
+            // Show selected tab content
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            // Add active class to clicked tab button
+            event.currentTarget.classList.add('active');
+            event.currentTarget.classList.remove('text-gray-500', 'hover:text-gray-700');
+        }
+
+        // Settings functions
+        function saveProfile() {
+            alert('Profile saved successfully!');
+        }
+
+        function saveCompany() {
+            alert('Company information saved successfully!');
+        }
+
+        function saveNotifications() {
+            alert('Notification preferences saved successfully!');
+        }
+
+        function updatePaymentMethod() {
+            alert('Payment method update functionality would open here');
+        }
+
+        function viewAllInvoices() {
+            alert('Viewing all billing invoices');
+        }
+
+        function changePlan() {
+            alert('Plan change functionality would open here');
+        }
+
+        function cancelSubscription() {
+            if (confirm('Are you sure you want to cancel your subscription?')) {
+                alert('Subscription cancellation initiated');
+            }
+        }
+
+        function changePassword() {
+            alert('Password changed successfully!');
+        }
+
+        function manage2FA() {
+            alert('Two-factor authentication management would open here');
+        }
+
+        function revokeSession(sessionId) {
+            if (confirm('Are you sure you want to revoke this session?')) {
+                alert(`Session ${sessionId} revoked`);
+            }
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Settings page loaded');
+        });
+    </script>
+</body>
+</html>
