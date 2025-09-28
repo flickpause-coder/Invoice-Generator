@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,6 +14,7 @@
     <script src="js/dataStore.js"></script>
     <script src="js/pdfGenerator.js"></script>
     <script src="js/modalSystem.js"></script>
+    <script src="js/paymentManager.js"></script>
     <style>
         .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -46,6 +48,10 @@
             background: #dcfce7;
             color: #166534;
         }
+        .status-sent {
+            background: #dbeafe;
+            color: #1e40af;
+        }
         .status-pending {
             background: #fef3c7;
             color: #92400e;
@@ -58,6 +64,24 @@
             background: #e0e7ff;
             color: #3730a3;
         }
+        .payment-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+        .payment-full {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .payment-partial {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .payment-none {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
         .user-menu {
             transform: translateY(-10px);
             opacity: 0;
@@ -68,6 +92,17 @@
             transform: translateY(0);
             opacity: 1;
             pointer-events: auto;
+        }
+        .progress-bar {
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            transition: width 0.3s ease;
         }
     </style>
 </head>
@@ -130,7 +165,7 @@
         <!-- Header -->
         <div class="mb-8">
             <h1 class="text-3xl font-bold text-gray-900">Invoice Management</h1>
-            <p class="text-gray-600 mt-2">Create, manage, and track all your invoices</p>
+            <p class="text-gray-600 mt-2">Create, manage, and track all your invoices with payment status</p>
         </div>
 
         <!-- Action Buttons -->
@@ -138,10 +173,13 @@
             <button onclick="createInvoice()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
                 <i class="fas fa-plus mr-2"></i>Create New Invoice
             </button>
+            <button onclick="showPaymentAnalytics()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
+                <i class="fas fa-chart-line mr-2"></i>Payment Analytics
+            </button>
             <button onclick="exportInvoices()" class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors">
                 <i class="fas fa-download mr-2"></i>Export Invoices
             </button>
-            <button onclick="importInvoices()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
+            <button onclick="importInvoices()" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors">
                 <i class="fas fa-upload mr-2"></i>Import Invoices
             </button>
         </div>
@@ -149,15 +187,24 @@
         <!-- Filters -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Filter Invoices</h3>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
                     <select id="status-filter" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="">All Status</option>
-                        <option value="paid">Paid</option>
-                        <option value="pending">Pending</option>
-                        <option value="overdue">Overdue</option>
                         <option value="draft">Draft</option>
+                        <option value="sent">Sent</option>
+                        <option value="paid">Paid</option>
+                        <option value="overdue">Overdue</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Payment Status</label>
+                    <select id="payment-filter" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">All Payments</option>
+                        <option value="fully_paid">Fully Paid</option>
+                        <option value="partially_paid">Partially Paid</option>
+                        <option value="unpaid">Unpaid</option>
                     </select>
                 </div>
                 <div>
@@ -183,49 +230,53 @@
             </div>
         </div>
 
-        <!-- Invoice Statistics -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8" id="invoice-stats">
+        <!-- Enhanced Invoice Statistics -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" id="invoice-stats">
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div class="flex items-center">
-                    <div class="p-2 bg-blue-100 rounded-lg">
-                        <i class="fas fa-file-invoice text-blue-600 text-xl"></i>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Total Revenue</p>
+                        <p class="text-2xl font-bold text-gray-900" id="total-revenue">$0</p>
+                        <p class="text-xs text-gray-500 mt-1">From <span id="paid-count">0</span> paid invoices</p>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Total Invoices</p>
-                        <p class="text-2xl font-bold text-gray-900" id="total-invoices">0</p>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div class="flex items-center">
                     <div class="p-2 bg-green-100 rounded-lg">
-                        <i class="fas fa-check-circle text-green-600 text-xl"></i>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Paid</p>
-                        <p class="text-2xl font-bold text-gray-900" id="paid-invoices">0</p>
+                        <i class="fas fa-dollar-sign text-green-600 text-xl"></i>
                     </div>
                 </div>
             </div>
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div class="flex items-center">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Outstanding</p>
+                        <p class="text-2xl font-bold text-gray-900" id="outstanding-amount">$0</p>
+                        <p class="text-xs text-gray-500 mt-1">From <span id="pending-count">0</span> invoices</p>
+                    </div>
                     <div class="p-2 bg-yellow-100 rounded-lg">
                         <i class="fas fa-clock text-yellow-600 text-xl"></i>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Pending</p>
-                        <p class="text-2xl font-bold text-gray-900" id="pending-invoices">0</p>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Overdue</p>
+                        <p class="text-2xl font-bold text-red-600" id="overdue-amount">$0</p>
+                        <p class="text-xs text-gray-500 mt-1">From <span id="overdue-count">0</span> invoices</p>
+                    </div>
+                    <div class="p-2 bg-red-100 rounded-lg">
+                        <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
                     </div>
                 </div>
             </div>
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div class="flex items-center">
-                    <div class="p-2 bg-red-100 rounded-lg">
-                        <i class="fas fa-exclamation-circle text-red-600 text-xl"></i>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Collection Rate</p>
+                        <p class="text-2xl font-bold text-gray-900" id="collection-rate">0%</p>
+                        <p class="text-xs text-gray-500 mt-1">Avg payment: <span id="avg-payment-time">0</span> days</p>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Overdue</p>
-                        <p class="text-2xl font-bold text-gray-900" id="overdue-invoices">0</p>
+                    <div class="p-2 bg-blue-100 rounded-lg">
+                        <i class="fas fa-chart-pie text-blue-600 text-xl"></i>
                     </div>
                 </div>
             </div>
@@ -243,6 +294,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice #</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Progress</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -259,7 +311,7 @@
 
     <script>
         // Global instances
-        let dataStore, modalSystem, pdfGenerator;
+        let dataStore, modalSystem, pdfGenerator, paymentManager;
         let currentInvoices = [];
         let filteredInvoices = [];
 
@@ -269,12 +321,13 @@
             dataStore = new DataStore();
             modalSystem = new ModalSystem();
             pdfGenerator = new PDFGenerator();
+            paymentManager = new PaymentManager(dataStore);
 
             // Load and display data
             loadInvoiceData();
             setupEventListeners();
             
-            console.log('Invoices page loaded with integrated modules');
+            console.log('Invoices page loaded with payment tracking system');
         });
 
         function setupEventListeners() {
@@ -295,12 +348,29 @@
 
             // Filter event listeners
             document.getElementById('status-filter').addEventListener('change', applyFilters);
+            document.getElementById('payment-filter').addEventListener('change', applyFilters);
             document.getElementById('client-filter').addEventListener('input', applyFilters);
             document.getElementById('date-from').addEventListener('change', applyFilters);
             document.getElementById('date-to').addEventListener('change', applyFilters);
+
+            // Payment event listeners
+            document.addEventListener('paymentAdded', function(event) {
+                loadInvoiceData();
+            });
+
+            document.addEventListener('paymentRemoved', function(event) {
+                loadInvoiceData();
+            });
+
+            document.addEventListener('statusChanged', function(event) {
+                loadInvoiceData();
+            });
         }
 
         function loadInvoiceData() {
+            // Update overdue invoices first
+            dataStore.updateOverdueInvoices();
+            
             // Get invoices and update display
             currentInvoices = dataStore.getInvoices();
             filteredInvoices = [...currentInvoices];
@@ -311,11 +381,19 @@
 
         function updateInvoiceStats() {
             const stats = dataStore.getInvoiceStats();
+            const collectionEfficiency = paymentManager.calculateCollectionEfficiency();
             
-            document.getElementById('total-invoices').textContent = stats.total;
-            document.getElementById('paid-invoices').textContent = stats.paid;
-            document.getElementById('pending-invoices').textContent = stats.pending;
-            document.getElementById('overdue-invoices').textContent = stats.overdue;
+            document.getElementById('total-revenue').textContent = formatCurrency(stats.totalRevenue);
+            document.getElementById('paid-count').textContent = stats.paid;
+            
+            document.getElementById('outstanding-amount').textContent = formatCurrency(stats.pendingAmount);
+            document.getElementById('pending-count').textContent = stats.pending;
+            
+            document.getElementById('overdue-amount').textContent = formatCurrency(stats.overdueAmount);
+            document.getElementById('overdue-count').textContent = stats.overdue;
+            
+            document.getElementById('collection-rate').textContent = collectionEfficiency.collectionRate.toFixed(1) + '%';
+            document.getElementById('avg-payment-time').textContent = stats.averagePaymentTime;
         }
 
         function renderInvoiceTable() {
@@ -324,7 +402,7 @@
             if (filteredInvoices.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+                        <td colspan="8" class="px-6 py-8 text-center text-gray-500">
                             <i class="fas fa-file-invoice text-4xl mb-4 opacity-50"></i>
                             <p>No invoices found</p>
                         </td>
@@ -334,24 +412,70 @@
             }
 
             tbody.innerHTML = filteredInvoices.map(invoice => {
-                const client = dataStore.getClientById(invoice.clientId);
-                const clientName = client ? client.name : 'Unknown Client';
+                const client = dataStore.getClient(invoice.clientId);
+                const clientName = client ? client.name : invoice.clientName || 'Unknown Client';
+                const paidAmount = invoice.paidAmount || 0;
+                const totalAmount = invoice.total || 0;
+                const paymentProgress = totalAmount > 0 ? (paidAmount / totalAmount) * 100 : 0;
+                
+                let paymentBadge = '';
+                if (paidAmount >= totalAmount) {
+                    paymentBadge = '<span class="payment-badge payment-full">Fully Paid</span>';
+                } else if (paidAmount > 0) {
+                    paymentBadge = '<span class="payment-badge payment-partial">Partial</span>';
+                } else {
+                    paymentBadge = '<span class="payment-badge payment-none">Unpaid</span>';
+                }
+
+                let statusClass = 'status-' + invoice.status;
+                let statusText = capitalizeFirst(invoice.status);
+                
+                // Add overdue indicator
+                if (invoice.status === 'overdue' && invoice.overdueDays) {
+                    statusText += ` (${invoice.overdueDays}d)`;
+                }
                 
                 return `
                     <tr class="invoice-row" data-invoice-id="${invoice.id}">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${invoice.invoiceNumber}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${invoice.id}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${clientName}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${parseFloat(invoice.total || 0).toFixed(2)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(invoice.issueDate)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatCurrency(totalAmount)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center space-x-2">
+                                <div class="flex-1">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: ${paymentProgress}%"></div>
+                                    </div>
+                                </div>
+                                <div class="text-xs text-gray-500 min-w-0">
+                                    ${formatCurrency(paidAmount)}/${formatCurrency(totalAmount)}
+                                </div>
+                            </div>
+                            <div class="mt-1">${paymentBadge}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(invoice.date)}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(invoice.dueDate)}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="status-badge status-${invoice.status}">${capitalizeFirst(invoice.status)}</span>
+                            <span class="status-badge ${statusClass}">${statusText}</span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button onclick="viewInvoice('${invoice.id}')" class="text-blue-600 hover:text-blue-900 mr-3">View</button>
-                            <button onclick="editInvoice('${invoice.id}')" class="text-green-600 hover:text-green-900 mr-3">Edit</button>
-                            <button onclick="downloadInvoicePDF('${invoice.id}')" class="text-purple-600 hover:text-purple-900 mr-3">PDF</button>
-                            <button onclick="deleteInvoice('${invoice.id}')" class="text-red-600 hover:text-red-900">Delete</button>
+                            <div class="flex space-x-2">
+                                <button onclick="viewInvoice('${invoice.id}')" class="text-blue-600 hover:text-blue-900" title="View Invoice">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button onclick="editInvoice('${invoice.id}')" class="text-green-600 hover:text-green-900" title="Edit Invoice">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="managePayments('${invoice.id}')" class="text-purple-600 hover:text-purple-900" title="Manage Payments">
+                                    <i class="fas fa-credit-card"></i>
+                                </button>
+                                <button onclick="downloadInvoicePDF('${invoice.id}')" class="text-indigo-600 hover:text-indigo-900" title="Download PDF">
+                                    <i class="fas fa-file-pdf"></i>
+                                </button>
+                                <button onclick="deleteInvoice('${invoice.id}')" class="text-red-600 hover:text-red-900" title="Delete Invoice">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -360,26 +484,33 @@
 
         // Invoice functions
         function createInvoice() {
-            modalSystem.showInvoiceForm();
+            modalSystem.showEditInvoiceModal();
         }
 
         function viewInvoice(invoiceId) {
-            const invoice = dataStore.getInvoiceById(invoiceId);
+            const invoice = dataStore.getInvoice(invoiceId);
             if (invoice) {
-                modalSystem.showInvoiceView(invoice);
+                modalSystem.showViewInvoiceModal(invoiceId);
             }
         }
 
         function editInvoice(invoiceId) {
-            const invoice = dataStore.getInvoiceById(invoiceId);
+            const invoice = dataStore.getInvoice(invoiceId);
             if (invoice) {
-                modalSystem.showInvoiceForm(invoice);
+                modalSystem.showEditInvoiceModal(invoiceId);
+            }
+        }
+
+        function managePayments(invoiceId) {
+            const invoice = dataStore.getInvoice(invoiceId);
+            if (invoice) {
+                showPaymentModal(invoice);
             }
         }
 
         function downloadInvoicePDF(invoiceId) {
-            const invoice = dataStore.getInvoiceById(invoiceId);
-            const client = dataStore.getClientById(invoice.clientId);
+            const invoice = dataStore.getInvoice(invoiceId);
+            const client = dataStore.getClient(invoice.clientId);
             
             if (invoice) {
                 pdfGenerator.generateInvoicePDF(invoice, client)
@@ -394,8 +525,8 @@
         }
 
         function deleteInvoice(invoiceId) {
-            const invoice = dataStore.getInvoiceById(invoiceId);
-            if (invoice && confirm(`Are you sure you want to delete invoice ${invoice.invoiceNumber}?`)) {
+            const invoice = dataStore.getInvoice(invoiceId);
+            if (invoice && confirm(`Are you sure you want to delete invoice ${invoice.id}?`)) {
                 if (dataStore.deleteInvoice(invoiceId)) {
                     loadInvoiceData(); // Refresh the display
                     alert('Invoice deleted successfully');
@@ -405,20 +536,296 @@
             }
         }
 
+        function showPaymentModal(invoice) {
+            const paymentHistory = invoice.paymentHistory || [];
+            const remainingAmount = (invoice.total || 0) - (invoice.paidAmount || 0);
+            
+            const content = `
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900">Payment Management - ${invoice.id}</h2>
+                        <button onclick="modalSystem.closeModal()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+
+                    <!-- Payment Summary -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="text-sm text-gray-600">Total Amount</div>
+                            <div class="text-xl font-bold text-gray-900">${formatCurrency(invoice.total || 0)}</div>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <div class="text-sm text-gray-600">Paid Amount</div>
+                            <div class="text-xl font-bold text-green-600">${formatCurrency(invoice.paidAmount || 0)}</div>
+                        </div>
+                        <div class="bg-yellow-50 p-4 rounded-lg">
+                            <div class="text-sm text-gray-600">Remaining</div>
+                            <div class="text-xl font-bold text-yellow-600">${formatCurrency(remainingAmount)}</div>
+                        </div>
+                    </div>
+
+                    <!-- Add Payment Form -->
+                    ${remainingAmount > 0 ? `
+                    <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Add Payment</h3>
+                        <form id="payment-form" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+                                <input type="number" id="payment-amount" max="${remainingAmount}" min="0.01" step="0.01" 
+                                       class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="0.00">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                                <input type="date" id="payment-date" value="${new Date().toISOString().split('T')[0]}" 
+                                       class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Method</label>
+                                <select id="payment-method" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                                    ${paymentManager.paymentMethods.map(method => 
+                                        `<option value="${method.value}">${method.label}</option>`
+                                    ).join('')}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Reference</label>
+                                <input type="text" id="payment-reference" placeholder="Transaction ID" 
+                                       class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                            </div>
+                            <div class="md:col-span-3">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Note</label>
+                                <input type="text" id="payment-note" placeholder="Payment note (optional)" 
+                                       class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                            </div>
+                            <div class="flex items-end">
+                                <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                                    Add Payment
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    ` : ''}
+
+                    <!-- Payment History -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Payment History</h3>
+                        ${paymentHistory.length > 0 ? `
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Method</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Reference</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Note</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        ${paymentHistory.map(payment => `
+                                            <tr>
+                                                <td class="px-4 py-2 text-sm text-gray-900">${formatDate(payment.date)}</td>
+                                                <td class="px-4 py-2 text-sm font-medium text-green-600">${formatCurrency(payment.amount)}</td>
+                                                <td class="px-4 py-2 text-sm text-gray-500">${paymentManager.getPaymentMethodLabel(payment.method)}</td>
+                                                <td class="px-4 py-2 text-sm text-gray-500">${payment.reference || '-'}</td>
+                                                <td class="px-4 py-2 text-sm text-gray-500">${payment.note || '-'}</td>
+                                                <td class="px-4 py-2 text-sm">
+                                                    <button onclick="removePayment('${invoice.id}', '${payment.id}')" 
+                                                            class="text-red-600 hover:text-red-900">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ` : `
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="fas fa-credit-card text-4xl mb-4 opacity-50"></i>
+                                <p>No payments recorded yet</p>
+                            </div>
+                        `}
+                    </div>
+                </div>
+            `;
+
+            modalSystem.showModal(content);
+            
+            // Setup payment form
+            const form = document.getElementById('payment-form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    addPayment(invoice.id);
+                });
+            }
+        }
+
+        function addPayment(invoiceId) {
+            const amount = parseFloat(document.getElementById('payment-amount').value);
+            const date = document.getElementById('payment-date').value;
+            const method = document.getElementById('payment-method').value;
+            const reference = document.getElementById('payment-reference').value;
+            const note = document.getElementById('payment-note').value;
+
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid payment amount');
+                return;
+            }
+
+            try {
+                paymentManager.recordPayment(invoiceId, {
+                    amount,
+                    date,
+                    method,
+                    reference,
+                    note
+                });
+
+                alert('Payment recorded successfully!');
+                modalSystem.closeModal();
+                loadInvoiceData();
+            } catch (error) {
+                alert('Error recording payment: ' + error.message);
+            }
+        }
+
+        function removePayment(invoiceId, paymentId) {
+            if (confirm('Are you sure you want to remove this payment?')) {
+                try {
+                    paymentManager.removePayment(invoiceId, paymentId);
+                    alert('Payment removed successfully!');
+                    modalSystem.closeModal();
+                    loadInvoiceData();
+                } catch (error) {
+                    alert('Error removing payment: ' + error.message);
+                }
+            }
+        }
+
+        function showPaymentAnalytics() {
+            const analytics = paymentManager.getPaymentAnalytics();
+            const overdueAnalysis = paymentManager.analyzeOverdueInvoices();
+            
+            const content = `
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900">Payment Analytics</h2>
+                        <button onclick="modalSystem.closeModal()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+
+                    <!-- Overview Stats -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <div class="text-sm text-gray-600">Total Payments</div>
+                            <div class="text-2xl font-bold text-blue-600">${analytics.overview.totalPayments}</div>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <div class="text-sm text-gray-600">Total Collected</div>
+                            <div class="text-2xl font-bold text-green-600">${formatCurrency(analytics.overview.totalAmount)}</div>
+                        </div>
+                        <div class="bg-purple-50 p-4 rounded-lg">
+                            <div class="text-sm text-gray-600">Avg Payment</div>
+                            <div class="text-2xl font-bold text-purple-600">${formatCurrency(analytics.overview.averagePayment)}</div>
+                        </div>
+                        <div class="bg-yellow-50 p-4 rounded-lg">
+                            <div class="text-sm text-gray-600">Avg Payment Time</div>
+                            <div class="text-2xl font-bold text-yellow-600">${analytics.overview.averagePaymentTime} days</div>
+                        </div>
+                    </div>
+
+                    <!-- Collection Efficiency -->
+                    <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Collection Efficiency</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <div class="text-sm text-gray-600">Collection Rate</div>
+                                <div class="text-xl font-bold text-gray-900">${analytics.collectionEfficiency.collectionRate.toFixed(1)}%</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-600">Total Invoiced</div>
+                                <div class="text-xl font-bold text-gray-900">${formatCurrency(analytics.collectionEfficiency.totalInvoiced)}</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-600">Outstanding</div>
+                                <div class="text-xl font-bold text-red-600">${formatCurrency(analytics.collectionEfficiency.outstandingAmount)}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Overdue Analysis -->
+                    <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Overdue Analysis</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-red-600">${overdueAnalysis.count}</div>
+                                <div class="text-sm text-gray-600">Overdue Invoices</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-red-600">${formatCurrency(overdueAnalysis.totalAmount)}</div>
+                                <div class="text-sm text-gray-600">Total Overdue</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-gray-900">${Math.round(overdueAnalysis.averageOverdueDays)}</div>
+                                <div class="text-sm text-gray-600">Avg Days Overdue</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-gray-900">${overdueAnalysis.topOverdueClients.length}</div>
+                                <div class="text-sm text-gray-600">Clients with Overdue</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Overdue by Age Group -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            ${Object.entries(overdueAnalysis.byAgeGroup).map(([range, data]) => `
+                                <div class="bg-gray-50 p-3 rounded">
+                                    <div class="text-sm font-medium text-gray-900">${range} days</div>
+                                    <div class="text-sm text-gray-600">${data.count} invoices</div>
+                                    <div class="text-sm font-medium text-red-600">${formatCurrency(data.amount)}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Payment Methods -->
+                    <div class="bg-white border border-gray-200 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Payment Methods</h3>
+                        <div class="space-y-3">
+                            ${Object.entries(analytics.paymentMethods).map(([method, amount]) => `
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600">${paymentManager.getPaymentMethodLabel(method)}</span>
+                                    <span class="text-sm font-medium text-gray-900">${formatCurrency(amount)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            modalSystem.showModal(content);
+        }
+
         function exportInvoices() {
             const invoices = dataStore.getInvoices();
-            const csvContent = dataStore.exportToCSV(invoices, 'invoices');
+            const csvContent = convertToCSV(invoices.map(invoice => ({
+                id: invoice.id,
+                clientName: invoice.clientName,
+                description: invoice.description,
+                date: invoice.date,
+                dueDate: invoice.dueDate,
+                status: invoice.status,
+                total: invoice.total,
+                paidAmount: invoice.paidAmount || 0,
+                remainingAmount: (invoice.total || 0) - (invoice.paidAmount || 0),
+                paymentCount: (invoice.paymentHistory || []).length
+            })));
             
-            // Create and download CSV file
-            const blob = new Blob([csvContent], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `invoices_${new Date().toISOString().split('T')[0]}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
+            downloadCSV(csvContent, `invoices_${new Date().toISOString().split('T')[0]}.csv`);
         }
 
         function importInvoices() {
@@ -435,12 +842,10 @@
                             if (file.name.endsWith('.json')) {
                                 importedData = JSON.parse(e.target.result);
                             } else {
-                                // Handle CSV import (simplified)
                                 alert('CSV import functionality would be implemented here');
                                 return;
                             }
                             
-                            // Import the data
                             if (Array.isArray(importedData)) {
                                 importedData.forEach(invoice => {
                                     dataStore.createInvoice(invoice);
@@ -460,6 +865,7 @@
 
         function applyFilters() {
             const statusFilter = document.getElementById('status-filter').value;
+            const paymentFilter = document.getElementById('payment-filter').value;
             const clientFilter = document.getElementById('client-filter').value.toLowerCase();
             const dateFrom = document.getElementById('date-from').value;
             const dateTo = document.getElementById('date-to').value;
@@ -470,20 +876,38 @@
                     return false;
                 }
 
+                // Payment status filter
+                if (paymentFilter) {
+                    const paidAmount = invoice.paidAmount || 0;
+                    const totalAmount = invoice.total || 0;
+                    
+                    switch (paymentFilter) {
+                        case 'fully_paid':
+                            if (paidAmount < totalAmount) return false;
+                            break;
+                        case 'partially_paid':
+                            if (paidAmount === 0 || paidAmount >= totalAmount) return false;
+                            break;
+                        case 'unpaid':
+                            if (paidAmount > 0) return false;
+                            break;
+                    }
+                }
+
                 // Client filter
                 if (clientFilter) {
-                    const client = dataStore.getClientById(invoice.clientId);
-                    const clientName = client ? client.name.toLowerCase() : '';
+                    const client = dataStore.getClient(invoice.clientId);
+                    const clientName = client ? client.name.toLowerCase() : invoice.clientName?.toLowerCase() || '';
                     if (!clientName.includes(clientFilter)) {
                         return false;
                     }
                 }
 
                 // Date filters
-                if (dateFrom && new Date(invoice.issueDate) < new Date(dateFrom)) {
+                if (dateFrom && new Date(invoice.date) < new Date(dateFrom)) {
                     return false;
                 }
-                if (dateTo && new Date(invoice.issueDate) > new Date(dateTo)) {
+                if (dateTo && new Date(invoice.date) > new Date(dateTo)) {
                     return false;
                 }
 
@@ -495,6 +919,7 @@
 
         function clearFilters() {
             document.getElementById('status-filter').value = '';
+            document.getElementById('payment-filter').value = '';
             document.getElementById('client-filter').value = '';
             document.getElementById('date-from').value = '';
             document.getElementById('date-to').value = '';
@@ -520,8 +945,43 @@
             });
         }
 
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(amount || 0);
+        }
+
         function capitalizeFirst(str) {
             return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        function convertToCSV(data) {
+            if (data.length === 0) return '';
+            
+            const headers = Object.keys(data[0]);
+            const csvContent = [
+                headers.join(','),
+                ...data.map(row => 
+                    headers.map(header => 
+                        JSON.stringify(row[header] || '')
+                    ).join(',')
+                )
+            ].join('\n');
+            
+            return csvContent;
+        }
+
+        function downloadCSV(csvContent, filename) {
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
         }
 
         // Listen for data changes from modals

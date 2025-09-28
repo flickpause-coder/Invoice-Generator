@@ -1,7 +1,9 @@
+
 /**
  * InvoiceGen Data Store
  * Centralized data management system using LocalStorage
  * Handles CRUD operations for invoices, clients, and settings
+ * Enhanced with Payment Tracking & Status Management
  */
 
 class DataStore {
@@ -12,6 +14,15 @@ class DataStore {
             settings: 'invoiceGen_settings',
             user: 'invoiceGen_user'
         };
+        
+        // Invoice status workflow
+        this.statusWorkflow = {
+            draft: ['sent', 'paid'],
+            sent: ['paid', 'overdue', 'draft'],
+            paid: ['sent'], // Allow reverting if needed
+            overdue: ['paid', 'sent']
+        };
+        
         this.init();
     }
 
@@ -20,6 +31,9 @@ class DataStore {
         if (!this.getInvoices().length) {
             this.initializeSampleData();
         }
+        
+        // Check for overdue invoices on initialization
+        this.updateOverdueInvoices();
     }
 
     // Generic storage methods
@@ -68,6 +82,10 @@ class DataStore {
         const newInvoice = {
             id: this.generateId('INV'),
             ...invoiceData,
+            status: invoiceData.status || 'draft',
+            paymentHistory: [],
+            paidAmount: 0,
+            remainingAmount: invoiceData.total || 0,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
         };
@@ -82,11 +100,37 @@ class DataStore {
         const index = invoices.findIndex(invoice => invoice.id === invoiceId);
         
         if (index !== -1) {
+            const currentInvoice = invoices[index];
+            
+            // Handle status transitions
+            if (updateData.status && updateData.status !== currentInvoice.status) {
+                if (!this.isValidStatusTransition(currentInvoice.status, updateData.status)) {
+                    throw new Error(`Invalid status transition from ${currentInvoice.status} to ${updateData.status}`);
+                }
+                
+                // Add status change to history
+                if (!currentInvoice.statusHistory) {
+                    currentInvoice.statusHistory = [];
+                }
+                currentInvoice.statusHistory.push({
+                    from: currentInvoice.status,
+                    to: updateData.status,
+                    timestamp: new Date().toISOString(),
+                    note: updateData.statusNote || ''
+                });
+            }
+            
             invoices[index] = {
-                ...invoices[index],
+                ...currentInvoice,
                 ...updateData,
                 updatedAt: new Date().toISOString()
             };
+            
+            // Recalculate remaining amount if total changed
+            if (updateData.total !== undefined) {
+                invoices[index].remainingAmount = updateData.total - (invoices[index].paidAmount || 0);
+            }
+            
             this.setItem(this.storageKeys.invoices, invoices);
             return invoices[index];
         }
@@ -102,6 +146,152 @@ class DataStore {
             return true;
         }
         return false;
+    }
+
+    // Payment Management
+    addPayment(invoiceId, paymentData) {
+        const invoice = this.getInvoice(invoiceId);
+        if (!invoice) {
+            throw new Error('Invoice not found');
+        }
+
+        const payment = {
+            id: this.generateId('PAY'),
+            amount: parseFloat(paymentData.amount),
+            date: paymentData.date || new Date().toISOString().split('T')[0],
+            method: paymentData.method || 'bank_transfer',
+            reference: paymentData.reference || '',
+            note: paymentData.note || '',
+            timestamp: new Date().toISOString()
+        };
+
+        // Validate payment amount
+        if (payment.amount <= 0) {
+            throw new Error('Payment amount must be greater than 0');
+        }
+
+        const newPaidAmount = (invoice.paidAmount || 0) + payment.amount;
+        if (newPaidAmount > invoice.total) {
+            throw new Error('Payment amount exceeds invoice total');
+        }
+
+        // Add payment to history
+        if (!invoice.paymentHistory) {
+            invoice.paymentHistory = [];
+        }
+        invoice.paymentHistory.push(payment);
+
+        // Update payment amounts
+        const updateData = {
+            paidAmount: newPaidAmount,
+            remainingAmount: invoice.total - newPaidAmount,
+            lastPaymentDate: payment.date
+        };
+
+        // Update status based on payment
+        if (newPaidAmount >= invoice.total) {
+            updateData.status = 'paid';
+            updateData.paidDate = payment.date;
+        } else if (invoice.status === 'draft') {
+            updateData.status = 'sent'; // Partial payment moves from draft to sent
+        }
+
+        return this.updateInvoice(invoiceId, updateData);
+    }
+
+    removePayment(invoiceId, paymentId) {
+        const invoice = this.getInvoice(invoiceId);
+        if (!invoice || !invoice.paymentHistory) {
+            throw new Error('Invoice or payment not found');
+        }
+
+        const paymentIndex = invoice.paymentHistory.findIndex(p => p.id === paymentId);
+        if (paymentIndex === -1) {
+            throw new Error('Payment not found');
+        }
+
+        const payment = invoice.paymentHistory[paymentIndex];
+        invoice.paymentHistory.splice(paymentIndex, 1);
+
+        // Recalculate amounts
+        const newPaidAmount = (invoice.paidAmount || 0) - payment.amount;
+        const updateData = {
+            paidAmount: Math.max(0, newPaidAmount),
+            remainingAmount: invoice.total - Math.max(0, newPaidAmount)
+        };
+
+        // Update status if fully paid becomes partially paid
+        if (invoice.status === 'paid' && newPaidAmount < invoice.total) {
+            updateData.status = 'sent';
+            delete updateData.paidDate;
+        }
+
+        return this.updateInvoice(invoiceId, updateData);
+    }
+
+    // Status Management
+    isValidStatusTransition(fromStatus, toStatus) {
+        if (!this.statusWorkflow[fromStatus]) {
+            return false;
+        }
+        return this.statusWorkflow[fromStatus].includes(toStatus);
+    }
+
+    updateInvoiceStatus(invoiceId, newStatus, note = '') {
+        const invoice = this.getInvoice(invoiceId);
+        if (!invoice) {
+            throw new Error('Invoice not found');
+        }
+
+        if (!this.isValidStatusTransition(invoice.status, newStatus)) {
+            throw new Error(`Cannot change status from ${invoice.status} to ${newStatus}`);
+        }
+
+        return this.updateInvoice(invoiceId, {
+            status: newStatus,
+            statusNote: note
+        });
+    }
+
+    // Overdue Detection
+    updateOverdueInvoices() {
+        const invoices = this.getInvoices();
+        const today = new Date();
+        let updated = false;
+
+        invoices.forEach(invoice => {
+            if (invoice.status === 'sent' && invoice.dueDate) {
+                const dueDate = new Date(invoice.dueDate);
+                if (today > dueDate) {
+                    invoice.status = 'overdue';
+                    invoice.overdueDate = today.toISOString().split('T')[0];
+                    invoice.overdueDays = Math.floor((today - dueDate) / (1000 * 60 * 60 * 24));
+                    
+                    // Add to status history
+                    if (!invoice.statusHistory) {
+                        invoice.statusHistory = [];
+                    }
+                    invoice.statusHistory.push({
+                        from: 'sent',
+                        to: 'overdue',
+                        timestamp: new Date().toISOString(),
+                        note: 'Automatically marked overdue'
+                    });
+                    
+                    updated = true;
+                }
+            }
+        });
+
+        if (updated) {
+            this.setItem(this.storageKeys.invoices, invoices);
+        }
+
+        return updated;
+    }
+
+    getOverdueInvoices() {
+        return this.getInvoices().filter(invoice => invoice.status === 'overdue');
     }
 
     // Client CRUD operations
@@ -181,6 +371,22 @@ class DataStore {
             invoices = invoices.filter(invoice => invoice.status === filters.status);
         }
         
+        // Payment status filter
+        if (filters.paymentStatus) {
+            invoices = invoices.filter(invoice => {
+                switch (filters.paymentStatus) {
+                    case 'fully_paid':
+                        return invoice.status === 'paid';
+                    case 'partially_paid':
+                        return invoice.paidAmount > 0 && invoice.paidAmount < invoice.total;
+                    case 'unpaid':
+                        return (invoice.paidAmount || 0) === 0;
+                    default:
+                        return true;
+                }
+            });
+        }
+        
         // Date range filter
         if (filters.dateFrom) {
             invoices = invoices.filter(invoice => 
@@ -218,7 +424,7 @@ class DataStore {
         return clients;
     }
 
-    // Statistics methods
+    // Enhanced Statistics methods
     getInvoiceStats() {
         const invoices = this.getInvoices();
         const stats = {
@@ -227,27 +433,61 @@ class DataStore {
             pending: 0,
             overdue: 0,
             draft: 0,
+            partiallyPaid: 0,
             totalRevenue: 0,
             pendingAmount: 0,
-            overdueAmount: 0
+            overdueAmount: 0,
+            paidAmount: 0,
+            averagePaymentTime: 0,
+            overdueInvoices: []
         };
         
+        let totalPaymentDays = 0;
+        let paidInvoicesCount = 0;
+
         invoices.forEach(invoice => {
-            const amount = parseFloat(invoice.total) || 0;
+            const total = parseFloat(invoice.total) || 0;
+            const paidAmount = parseFloat(invoice.paidAmount) || 0;
             
+            // Count by status
             switch (invoice.status) {
                 case 'paid':
                     stats.paid++;
-                    stats.totalRevenue += amount;
+                    stats.totalRevenue += total;
+                    stats.paidAmount += paidAmount;
+                    
+                    // Calculate payment time
+                    if (invoice.paidDate && invoice.date) {
+                        const issueDate = new Date(invoice.date);
+                        const paidDate = new Date(invoice.paidDate);
+                        const paymentDays = Math.floor((paidDate - issueDate) / (1000 * 60 * 60 * 24));
+                        totalPaymentDays += paymentDays;
+                        paidInvoicesCount++;
+                    }
                     break;
                 case 'sent':
                 case 'pending':
                     stats.pending++;
-                    stats.pendingAmount += amount;
+                    stats.pendingAmount += (total - paidAmount);
+                    if (paidAmount > 0) {
+                        stats.partiallyPaid++;
+                        stats.paidAmount += paidAmount;
+                    }
                     break;
                 case 'overdue':
                     stats.overdue++;
-                    stats.overdueAmount += amount;
+                    stats.overdueAmount += (total - paidAmount);
+                    stats.overdueInvoices.push({
+                        id: invoice.id,
+                        clientName: invoice.clientName,
+                        amount: total - paidAmount,
+                        dueDate: invoice.dueDate,
+                        overdueDays: invoice.overdueDays || 0
+                    });
+                    if (paidAmount > 0) {
+                        stats.partiallyPaid++;
+                        stats.paidAmount += paidAmount;
+                    }
                     break;
                 case 'draft':
                     stats.draft++;
@@ -255,29 +495,110 @@ class DataStore {
             }
         });
         
+        // Calculate average payment time
+        if (paidInvoicesCount > 0) {
+            stats.averagePaymentTime = Math.round(totalPaymentDays / paidInvoicesCount);
+        }
+        
+        return stats;
+    }
+
+    getPaymentStats() {
+        const invoices = this.getInvoices();
+        const stats = {
+            totalPayments: 0,
+            totalPaidAmount: 0,
+            averagePaymentAmount: 0,
+            paymentMethods: {},
+            monthlyPayments: {},
+            recentPayments: []
+        };
+
+        const allPayments = [];
+        
+        invoices.forEach(invoice => {
+            if (invoice.paymentHistory && invoice.paymentHistory.length > 0) {
+                invoice.paymentHistory.forEach(payment => {
+                    allPayments.push({
+                        ...payment,
+                        invoiceId: invoice.id,
+                        clientName: invoice.clientName
+                    });
+                });
+            }
+        });
+
+        stats.totalPayments = allPayments.length;
+        stats.totalPaidAmount = allPayments.reduce((sum, payment) => sum + payment.amount, 0);
+        
+        if (stats.totalPayments > 0) {
+            stats.averagePaymentAmount = stats.totalPaidAmount / stats.totalPayments;
+        }
+
+        // Group by payment method
+        allPayments.forEach(payment => {
+            const method = payment.method || 'unknown';
+            stats.paymentMethods[method] = (stats.paymentMethods[method] || 0) + payment.amount;
+        });
+
+        // Group by month
+        allPayments.forEach(payment => {
+            const month = payment.date.substring(0, 7); // YYYY-MM
+            stats.monthlyPayments[month] = (stats.monthlyPayments[month] || 0) + payment.amount;
+        });
+
+        // Recent payments (last 10)
+        stats.recentPayments = allPayments
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+            .slice(0, 10);
+
         return stats;
     }
 
     getClientStats() {
         const clients = this.getClients();
+        const invoices = this.getInvoices();
         const stats = {
             total: clients.length,
             active: 0,
-            inactive: 0
+            inactive: 0,
+            topClients: []
         };
         
+        // Calculate client revenue
+        const clientRevenue = {};
+        invoices.forEach(invoice => {
+            if (invoice.clientId && invoice.status === 'paid') {
+                clientRevenue[invoice.clientId] = (clientRevenue[invoice.clientId] || 0) + (invoice.total || 0);
+            }
+        });
+
         clients.forEach(client => {
             if (client.status === 'active') {
                 stats.active++;
             } else {
                 stats.inactive++;
             }
+
+            // Add to top clients if they have revenue
+            if (clientRevenue[client.id]) {
+                stats.topClients.push({
+                    id: client.id,
+                    name: client.name,
+                    company: client.company,
+                    revenue: clientRevenue[client.id]
+                });
+            }
         });
+
+        // Sort top clients by revenue
+        stats.topClients.sort((a, b) => b.revenue - a.revenue);
+        stats.topClients = stats.topClients.slice(0, 5);
         
         return stats;
     }
 
-    // Initialize sample data
+    // Initialize sample data with payment tracking
     initializeSampleData() {
         // Sample clients
         const sampleClients = [
@@ -327,7 +648,7 @@ class DataStore {
             }
         ];
 
-        // Sample invoices
+        // Sample invoices with payment tracking
         const sampleInvoices = [
             {
                 id: 'INV-001',
@@ -344,8 +665,36 @@ class DataStore {
                 subtotal: 1250,
                 tax: 0,
                 total: 1250,
+                paidAmount: 1250,
+                remainingAmount: 0,
+                paidDate: '2024-09-25',
+                paymentHistory: [
+                    {
+                        id: 'PAY-001',
+                        amount: 1250,
+                        date: '2024-09-25',
+                        method: 'bank_transfer',
+                        reference: 'TXN-12345',
+                        note: 'Full payment received',
+                        timestamp: '2024-09-25T14:30:00Z'
+                    }
+                ],
+                statusHistory: [
+                    {
+                        from: 'draft',
+                        to: 'sent',
+                        timestamp: '2024-09-15T10:00:00Z',
+                        note: 'Invoice sent to client'
+                    },
+                    {
+                        from: 'sent',
+                        to: 'paid',
+                        timestamp: '2024-09-25T14:30:00Z',
+                        note: 'Payment received'
+                    }
+                ],
                 createdAt: '2024-09-15T10:00:00Z',
-                updatedAt: '2024-09-15T10:00:00Z'
+                updatedAt: '2024-09-25T14:30:00Z'
             },
             {
                 id: 'INV-002',
@@ -362,8 +711,29 @@ class DataStore {
                 subtotal: 2500,
                 tax: 0,
                 total: 2500,
+                paidAmount: 1000,
+                remainingAmount: 1500,
+                paymentHistory: [
+                    {
+                        id: 'PAY-002',
+                        amount: 1000,
+                        date: '2024-09-22',
+                        method: 'credit_card',
+                        reference: 'CC-67890',
+                        note: 'Partial payment - 40%',
+                        timestamp: '2024-09-22T09:15:00Z'
+                    }
+                ],
+                statusHistory: [
+                    {
+                        from: 'draft',
+                        to: 'sent',
+                        timestamp: '2024-09-20T10:00:00Z',
+                        note: 'Invoice sent to client'
+                    }
+                ],
                 createdAt: '2024-09-20T10:00:00Z',
-                updatedAt: '2024-09-20T10:00:00Z'
+                updatedAt: '2024-09-22T09:15:00Z'
             },
             {
                 id: 'INV-003',
@@ -380,8 +750,27 @@ class DataStore {
                 subtotal: 3750,
                 tax: 0,
                 total: 3750,
+                paidAmount: 0,
+                remainingAmount: 3750,
+                overdueDate: '2024-09-26',
+                overdueDays: 2,
+                paymentHistory: [],
+                statusHistory: [
+                    {
+                        from: 'draft',
+                        to: 'sent',
+                        timestamp: '2024-09-10T10:00:00Z',
+                        note: 'Invoice sent to client'
+                    },
+                    {
+                        from: 'sent',
+                        to: 'overdue',
+                        timestamp: '2024-09-26T00:00:00Z',
+                        note: 'Automatically marked overdue'
+                    }
+                ],
                 createdAt: '2024-09-10T10:00:00Z',
-                updatedAt: '2024-09-10T10:00:00Z'
+                updatedAt: '2024-09-26T00:00:00Z'
             },
             {
                 id: 'INV-004',
@@ -398,6 +787,10 @@ class DataStore {
                 subtotal: 850,
                 tax: 0,
                 total: 850,
+                paidAmount: 0,
+                remainingAmount: 850,
+                paymentHistory: [],
+                statusHistory: [],
                 createdAt: '2024-09-25T10:00:00Z',
                 updatedAt: '2024-09-25T10:00:00Z'
             }

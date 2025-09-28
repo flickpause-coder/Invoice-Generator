@@ -1,6 +1,8 @@
+
 /**
  * InvoiceGen Modal System
  * Handles modal dialogs for viewing, editing, and creating invoices and clients
+ * Enhanced with Payment Tracking & Status Management
  */
 
 class ModalSystem {
@@ -44,7 +46,7 @@ class ModalSystem {
         const container = document.getElementById('modal-container');
         container.innerHTML = `
             <div class="modal-backdrop fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-                <div class="modal-content bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto">
+                <div class="modal-content bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-screen overflow-y-auto">
                     ${content}
                 </div>
             </div>
@@ -62,7 +64,7 @@ class ModalSystem {
         document.body.style.overflow = '';
     }
 
-    // Invoice Modals
+    // Enhanced Invoice View Modal with Payment Information
     showViewInvoiceModal(invoiceId) {
         const invoice = window.dataStore.getInvoice(invoiceId);
         const client = invoice.clientId ? window.dataStore.getClient(invoice.clientId) : null;
@@ -71,6 +73,12 @@ class ModalSystem {
             alert('Invoice not found');
             return;
         }
+
+        const paymentHistory = invoice.paymentHistory || [];
+        const statusHistory = invoice.statusHistory || [];
+        const paidAmount = invoice.paidAmount || 0;
+        const remainingAmount = (invoice.total || 0) - paidAmount;
+        const paymentProgress = invoice.total > 0 ? (paidAmount / invoice.total) * 100 : 0;
 
         const content = `
             <div class="p-6">
@@ -96,7 +104,35 @@ class ModalSystem {
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Payment Status Overview -->
+                <div class="bg-gradient-to-r from-blue-50 to-green-50 p-6 rounded-lg mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Payment Status</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-gray-900">${this.formatCurrency(invoice.total || 0)}</div>
+                            <div class="text-sm text-gray-600">Total Amount</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-green-600">${this.formatCurrency(paidAmount)}</div>
+                            <div class="text-sm text-gray-600">Paid Amount</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-yellow-600">${this.formatCurrency(remainingAmount)}</div>
+                            <div class="text-sm text-gray-600">Remaining</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-blue-600">${paymentProgress.toFixed(1)}%</div>
+                            <div class="text-sm text-gray-600">Progress</div>
+                        </div>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="bg-gradient-to-r from-green-400 to-green-600 h-3 rounded-full transition-all duration-300" 
+                             style="width: ${paymentProgress}%"></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <!-- Invoice Details -->
                     <div class="bg-gray-50 p-4 rounded-lg">
                         <h3 class="font-semibold text-gray-900 mb-3">Invoice Details</h3>
                         <div class="space-y-2">
@@ -105,11 +141,14 @@ class ModalSystem {
                             <div><span class="font-medium">Due Date:</span> ${this.formatDate(invoice.dueDate)}</div>
                             <div><span class="font-medium">Status:</span> 
                                 <span class="status-badge status-${invoice.status}">${this.capitalizeFirst(invoice.status)}</span>
+                                ${invoice.status === 'overdue' && invoice.overdueDays ? `<span class="text-red-600 text-sm ml-2">(${invoice.overdueDays} days overdue)</span>` : ''}
                             </div>
                             <div><span class="font-medium">Description:</span> ${invoice.description || 'N/A'}</div>
+                            ${invoice.lastPaymentDate ? `<div><span class="font-medium">Last Payment:</span> ${this.formatDate(invoice.lastPaymentDate)}</div>` : ''}
                         </div>
                     </div>
 
+                    <!-- Client Information -->
                     ${client ? `
                     <div class="bg-gray-50 p-4 rounded-lg">
                         <h3 class="font-semibold text-gray-900 mb-3">Client Information</h3>
@@ -129,6 +168,7 @@ class ModalSystem {
                     `}
                 </div>
 
+                <!-- Items -->
                 <div class="mb-6">
                     <h3 class="font-semibold text-gray-900 mb-3">Items</h3>
                     <div class="overflow-x-auto">
@@ -146,8 +186,8 @@ class ModalSystem {
                                     <tr>
                                         <td class="px-6 py-4 text-sm text-gray-900">${item.description}</td>
                                         <td class="px-6 py-4 text-sm text-gray-900">${item.quantity}</td>
-                                        <td class="px-6 py-4 text-sm text-gray-900">$${item.rate.toFixed(2)}</td>
-                                        <td class="px-6 py-4 text-sm text-gray-900">$${item.amount.toFixed(2)}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-900">${this.formatCurrency(item.rate)}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-900">${this.formatCurrency(item.amount)}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -155,22 +195,87 @@ class ModalSystem {
                     </div>
                 </div>
 
+                <!-- Payment History -->
+                ${paymentHistory.length > 0 ? `
+                <div class="mb-6">
+                    <h3 class="font-semibold text-gray-900 mb-3">Payment History</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Method</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reference</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Note</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                ${paymentHistory.map(payment => `
+                                    <tr>
+                                        <td class="px-4 py-3 text-sm text-gray-900">${this.formatDate(payment.date)}</td>
+                                        <td class="px-4 py-3 text-sm font-medium text-green-600">${this.formatCurrency(payment.amount)}</td>
+                                        <td class="px-4 py-3 text-sm text-gray-500">${window.paymentManager.getPaymentMethodLabel(payment.method)}</td>
+                                        <td class="px-4 py-3 text-sm text-gray-500">${payment.reference || '-'}</td>
+                                        <td class="px-4 py-3 text-sm text-gray-500">${payment.note || '-'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                ` : ''}
+
+                <!-- Status History -->
+                ${statusHistory.length > 0 ? `
+                <div class="mb-6">
+                    <h3 class="font-semibold text-gray-900 mb-3">Status History</h3>
+                    <div class="space-y-3">
+                        ${statusHistory.map(status => `
+                            <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                                <div class="flex-shrink-0">
+                                    <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-sm font-medium text-gray-900">
+                                        Changed from <span class="status-badge status-${status.from}">${this.capitalizeFirst(status.from)}</span> 
+                                        to <span class="status-badge status-${status.to}">${this.capitalizeFirst(status.to)}</span>
+                                    </div>
+                                    <div class="text-xs text-gray-500">${this.formatDate(status.timestamp)} ${status.note ? `• ${status.note}` : ''}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
+
+                <!-- Invoice Total -->
                 <div class="flex justify-end">
                     <div class="w-64">
                         <div class="flex justify-between py-2">
                             <span class="font-medium">Subtotal:</span>
-                            <span>$${invoice.subtotal.toFixed(2)}</span>
+                            <span>${this.formatCurrency(invoice.subtotal)}</span>
                         </div>
                         ${invoice.tax > 0 ? `
                         <div class="flex justify-between py-2">
                             <span class="font-medium">Tax:</span>
-                            <span>$${invoice.tax.toFixed(2)}</span>
+                            <span>${this.formatCurrency(invoice.tax)}</span>
                         </div>
                         ` : ''}
                         <div class="flex justify-between py-2 border-t border-gray-200 font-bold text-lg">
                             <span>Total:</span>
-                            <span>$${invoice.total.toFixed(2)}</span>
+                            <span>${this.formatCurrency(invoice.total)}</span>
                         </div>
+                        ${paidAmount > 0 ? `
+                        <div class="flex justify-between py-2 text-green-600">
+                            <span class="font-medium">Paid:</span>
+                            <span>-${this.formatCurrency(paidAmount)}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-t border-gray-200 font-bold text-lg ${remainingAmount > 0 ? 'text-red-600' : 'text-green-600'}">
+                            <span>Balance:</span>
+                            <span>${this.formatCurrency(remainingAmount)}</span>
+                        </div>
+                        ` : ''}
                     </div>
                 </div>
             </div>
@@ -179,6 +284,7 @@ class ModalSystem {
         this.showModal(content);
     }
 
+    // Enhanced Invoice Edit Modal with Status Management
     showEditInvoiceModal(invoiceId = null) {
         const invoice = invoiceId ? window.dataStore.getInvoice(invoiceId) : null;
         const clients = window.dataStore.getClients();
@@ -216,6 +322,7 @@ class ModalSystem {
                                 <option value="paid" ${invoice && invoice.status === 'paid' ? 'selected' : ''}>Paid</option>
                                 <option value="overdue" ${invoice && invoice.status === 'overdue' ? 'selected' : ''}>Overdue</option>
                             </select>
+                            ${isEdit ? `<div class="text-xs text-gray-500 mt-1">Current: ${this.capitalizeFirst(invoice.status)}</div>` : ''}
                         </div>
 
                         <div>
@@ -238,6 +345,18 @@ class ModalSystem {
                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     </div>
 
+                    ${isEdit && (invoice.paidAmount || 0) > 0 ? `
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
+                            <div class="text-sm text-yellow-800">
+                                <strong>Payment Warning:</strong> This invoice has received payments totaling ${this.formatCurrency(invoice.paidAmount)}. 
+                                Changing the total amount may affect payment calculations.
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+
                     <div>
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-semibold text-gray-900">Items</h3>
@@ -255,6 +374,12 @@ class ModalSystem {
                     <div class="flex justify-between items-center pt-6 border-t border-gray-200">
                         <div class="text-right">
                             <div class="text-lg font-semibold">Total: $<span id="total-amount">0.00</span></div>
+                            ${isEdit && (invoice.paidAmount || 0) > 0 ? `
+                            <div class="text-sm text-gray-600">
+                                Paid: ${this.formatCurrency(invoice.paidAmount)} | 
+                                Balance: $<span id="balance-amount">${((invoice.total || 0) - (invoice.paidAmount || 0)).toFixed(2)}</span>
+                            </div>
+                            ` : ''}
                         </div>
                         <div class="flex space-x-4">
                             <button type="button" onclick="window.modalSystem.closeModal()" 
@@ -321,6 +446,15 @@ class ModalSystem {
                 total += amount;
             });
             document.getElementById('total-amount').textContent = total.toFixed(2);
+            
+            // Update balance if editing invoice with payments
+            if (invoice && (invoice.paidAmount || 0) > 0) {
+                const balanceElement = document.getElementById('balance-amount');
+                if (balanceElement) {
+                    const balance = total - (invoice.paidAmount || 0);
+                    balanceElement.textContent = balance.toFixed(2);
+                }
+            }
         };
 
         // Add event listeners for calculation
@@ -367,7 +501,6 @@ class ModalSystem {
 
     saveInvoice(invoiceId) {
         const form = document.getElementById('invoice-form');
-        const formData = new FormData(form);
         
         // Collect items
         const items = [];
@@ -390,6 +523,7 @@ class ModalSystem {
         const clientId = document.getElementById('client-select').value;
         const client = clientId ? window.dataStore.getClient(clientId) : null;
         const subtotal = items.reduce((sum, item) => sum + item.amount, 0);
+        const newStatus = document.getElementById('status-select').value;
 
         const invoiceData = {
             clientId: clientId || null,
@@ -397,7 +531,7 @@ class ModalSystem {
             description: document.getElementById('description-input').value,
             date: document.getElementById('date-input').value,
             dueDate: document.getElementById('due-date-input').value,
-            status: document.getElementById('status-select').value,
+            status: newStatus,
             items: items,
             subtotal: subtotal,
             tax: 0, // Can be extended later
@@ -406,6 +540,21 @@ class ModalSystem {
 
         try {
             if (invoiceId) {
+                const currentInvoice = window.dataStore.getInvoice(invoiceId);
+                
+                // Check if status change is valid
+                if (currentInvoice.status !== newStatus) {
+                    if (!window.dataStore.isValidStatusTransition(currentInvoice.status, newStatus)) {
+                        alert(`Cannot change status from ${currentInvoice.status} to ${newStatus}. Please use a valid transition.`);
+                        return;
+                    }
+                }
+                
+                // Update remaining amount if total changed
+                if (currentInvoice.total !== subtotal) {
+                    invoiceData.remainingAmount = subtotal - (currentInvoice.paidAmount || 0);
+                }
+                
                 window.dataStore.updateInvoice(invoiceId, invoiceData);
                 alert('Invoice updated successfully!');
             } else {
@@ -414,15 +563,20 @@ class ModalSystem {
             }
             
             this.closeModal();
-            // Refresh the page to show updated data
-            window.location.reload();
+            
+            // Trigger custom events
+            const event = new CustomEvent(invoiceId ? 'invoiceUpdated' : 'invoiceCreated', {
+                detail: { invoiceId: invoiceId || 'new' }
+            });
+            document.dispatchEvent(event);
+            
         } catch (error) {
             console.error('Error saving invoice:', error);
-            alert('Error saving invoice. Please try again.');
+            alert('Error saving invoice: ' + error.message);
         }
     }
 
-    // Client Modals
+    // Client Modals (unchanged from original)
     showViewClientModal(clientId) {
         const client = window.dataStore.getClient(clientId);
         const invoices = window.dataStore.getInvoices().filter(inv => inv.clientId === clientId);
@@ -480,6 +634,7 @@ class ModalSystem {
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Invoice #</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Paid</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                                     </tr>
@@ -489,7 +644,8 @@ class ModalSystem {
                                         <tr>
                                             <td class="px-6 py-4 text-sm font-medium text-gray-900">${invoice.id}</td>
                                             <td class="px-6 py-4 text-sm text-gray-500">${this.formatDate(invoice.date)}</td>
-                                            <td class="px-6 py-4 text-sm text-gray-900">$${invoice.total.toFixed(2)}</td>
+                                            <td class="px-6 py-4 text-sm text-gray-900">${this.formatCurrency(invoice.total)}</td>
+                                            <td class="px-6 py-4 text-sm text-green-600">${this.formatCurrency(invoice.paidAmount || 0)}</td>
                                             <td class="px-6 py-4 text-sm">
                                                 <span class="status-badge status-${invoice.status}">${this.capitalizeFirst(invoice.status)}</span>
                                             </td>
@@ -619,8 +775,13 @@ class ModalSystem {
             }
             
             this.closeModal();
-            // Refresh the page to show updated data
-            window.location.reload();
+            
+            // Trigger custom events
+            const event = new CustomEvent(clientId ? 'clientUpdated' : 'clientCreated', {
+                detail: { clientId: clientId || 'new' }
+            });
+            document.dispatchEvent(event);
+            
         } catch (error) {
             console.error('Error saving client:', error);
             alert('Error saving client. Please try again.');
@@ -629,12 +790,20 @@ class ModalSystem {
 
     // Utility methods
     formatDate(dateString) {
+        if (!dateString) return '';
         const date = new Date(dateString);
         return date.toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'short',
             day: 'numeric'
         });
+    }
+
+    formatCurrency(amount) {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD'
+        }).format(amount || 0);
     }
 
     capitalizeFirst(str) {
