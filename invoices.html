@@ -73,6 +73,12 @@
              <button onclick="createInvoice()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
                 <i class="fas fa-plus mr-2"></i>Create New Invoice
             </button>
+        <script>
+        function createInvoice() {
+            const newInvoiceId = 'INV-' + Date.now();
+            window.location.href = `invoice-design.html?id=${newInvoiceId}`;
+        }
+        </script>
         </div>
 
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
@@ -225,7 +231,7 @@
 
         function createInvoice() {
             const newInvoiceId = 'INV-' + Date.now();
-            window.location.href = `create-invoice.html?id=${newInvoiceId}`;
+            window.location.href = `invoice-design.html?id=${newInvoiceId}`;
         }
         
         function viewInvoice(id) {
