@@ -8,17 +8,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- Include our custom modules -->
+    
+    <script src="auth-improved.js"></script>
     <script src="js/dataStore.js"></script>
     <script src="js/pdfGenerator.js"></script>
     <script src="js/modalSystem.js"></script>
     <script src="js/paymentManager.js"></script>
+    
     <style>
-        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .glass-effect { backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); }
-        .hover-lift { transition: all 0.3s ease; }
-        .hover-lift:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); }
-        .invoice-row { transition: all 0.2s ease; }
         .invoice-row:hover { background-color: #f8fafc; transform: translateX(4px); }
         .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
         .status-paid { background: #dcfce7; color: #166534; }
@@ -26,44 +23,219 @@
         .status-pending { background: #fef3c7; color: #92400e; }
         .status-overdue { background: #fee2e2; color: #991b1b; }
         .status-draft { background: #e0e7ff; color: #3730a3; }
-        .payment-badge { padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 500; }
-        .payment-full { background: #dcfce7; color: #166534; }
-        .payment-partial { background: #fef3c7; color: #92400e; }
-        .payment-none { background: #f3f4f6; color: #6b7280; }
         .user-menu { transform: translateY(-10px); opacity: 0; pointer-events: none; transition: all 0.2s ease; }
         .user-menu.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
-        .progress-bar { height: 4px; background: #e5e7eb; border-radius: 2px; overflow: hidden; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, #10b981, #059669); transition: width 0.3s ease; }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
-    <!-- Navigation -->
-    <!-- ... Navigation unchanged ... -->
-    <!-- Main Content -->
-    <!-- ... Main content unchanged ... -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-2xl font-bold text-gray-900">InvoiceGen</h1>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="index.html" class="nav-link text-gray-600 hover:text-gray-900">Dashboard</a>
+                    <a href="invoices.html" class="nav-link text-blue-600 font-medium">Invoices</a>
+                    <a href="clients.html" class="nav-link text-gray-600 hover:text-gray-900">Clients</a>
+                    <a href="invoice-design.html" class="nav-link text-gray-600 hover:text-gray-900">Invoice Design</a>
+                    <a href="settings.html" class="nav-link text-gray-600 hover:text-gray-900">Settings</a>
+                </div>
+                <div class="relative">
+                    <button id="user-menu-button" class="flex items-center space-x-3 text-gray-700 hover:text-gray-900 focus:outline-none">
+                        <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                            <span class="text-white text-sm font-medium">TU</span>
+                        </div>
+                        <div class="hidden md:block text-left">
+                            <div class="text-sm font-medium">Test User</div>
+                            <div class="text-xs text-gray-500">Admin</div>
+                        </div>
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </button>
+                    <div id="user-menu" class="user-menu absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
+                        <a href="settings.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
+                        <button onclick="logout()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Invoice Management</h1>
+            <p class="text-gray-600 mt-2">Oversee all your invoices and track their status</p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-4 mb-8">
+             <button onclick="createInvoice()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                <i class="fas fa-plus mr-2"></i>Create New Invoice
+            </button>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                    <input type="text" id="search-input" placeholder="Search by number, client..." class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                    <select id="status-filter" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                        <option value="">All Status</option>
+                        <option value="paid">Paid</option>
+                        <option value="sent">Sent</option>
+                        <option value="overdue">Overdue</option>
+                        <option value="draft">Draft</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                    <select id="sort-filter" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                        <option value="date">Date</option>
+                        <option value="number">Number</option>
+                        <option value="amount">Amount</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Invoice</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="invoice-table-body">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // ... previous code unchanged ...
-        // Add on DOMContentLoaded: set filter from URL param
+        let dataStore, modalSystem, pdfGenerator, paymentManager;
+        let currentInvoices = [];
+        let filteredInvoices = [];
+
+        // Single, correct event listener
         document.addEventListener('DOMContentLoaded', function() {
-            // ... existing code above ...
-            // Gemini suggestion: filter via URL param
+            // Initialize modules
+            dataStore = new DataStore();
+            modalSystem = new ModalSystem();
+            pdfGenerator = new PDFGenerator();
+            paymentManager = new PaymentManager(dataStore);
+
+            initializeInvoicesPage();
+        });
+
+        function initializeInvoicesPage() {
+            setupEventListeners();
+            loadInvoiceData();
+
             const urlParams = new URLSearchParams(window.location.search);
             const filter = urlParams.get('filter');
             if (filter) {
                 document.getElementById('status-filter').value = filter;
                 applyFilters();
             }
-            // ... existing code below ...
-        });
+        }
+        
+        function setupEventListeners() {
+            document.getElementById('user-menu-button').addEventListener('click', function() {
+                document.getElementById('user-menu').classList.toggle('show');
+            });
+            
+            document.getElementById('search-input').addEventListener('input', applyFilters);
+            document.getElementById('status-filter').addEventListener('change', applyFilters);
+            document.getElementById('sort-filter').addEventListener('change', applyFilters);
+        }
 
-        // Update createInvoice function as per Gemini suggestion
+        function loadInvoiceData() {
+            currentInvoices = dataStore.getInvoices();
+            filteredInvoices = [...currentInvoices];
+            renderInvoiceTable();
+        }
+
+        function renderInvoiceTable() {
+            const tbody = document.getElementById('invoice-table-body');
+            if (filteredInvoices.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8">No invoices found.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filteredInvoices.map(invoice => {
+                const client = dataStore.getClient(invoice.clientId) || { name: 'Unknown Client' };
+                return `
+                    <tr class="invoice-row" data-invoice-id="${invoice.id}">
+                        <td class="px-6 py-4">${invoice.number || 'N/A'}</td>
+                        <td class="px-6 py-4">${client.name}</td>
+                        <td class="px-6 py-4"><span class="status-badge ${getStatusBadgeClass(invoice.status)}">${invoice.status}</span></td>
+                        <td class="px-6 py-4">$${(invoice.total || 0).toFixed(2)}</td>
+                        <td class="px-6 py-4">
+                            <button onclick="viewInvoice('${invoice.id}')" class="text-blue-600">View</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function applyFilters() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const statusFilter = document.getElementById('status-filter').value;
+            const sortBy = document.getElementById('sort-filter').value;
+
+            filteredInvoices = currentInvoices.filter(invoice => {
+                const client = dataStore.getClient(invoice.clientId) || {};
+                const searchableText = `${invoice.number} ${client.name}`.toLowerCase();
+                
+                if (searchTerm && !searchableText.includes(searchTerm)) return false;
+                if (statusFilter && invoice.status !== statusFilter) return false;
+                
+                return true;
+            });
+
+            filteredInvoices.sort((a, b) => {
+                if (sortBy === 'number') return a.number.localeCompare(b.number);
+                if (sortBy === 'amount') return b.total - a.total;
+                return new Date(b.date) - new Date(a.date); // Default to date
+            });
+
+            renderInvoiceTable();
+        }
+
+        function getStatusBadgeClass(status) {
+            switch (status) {
+                case 'paid': return 'status-paid';
+                case 'sent': return 'status-sent';
+                case 'overdue': return 'status-overdue';
+                case 'draft':
+                default:
+                    return 'status-draft';
+            }
+        }
+
         function createInvoice() {
-            // Generate a new invoice ID
             const newInvoiceId = 'INV-' + Date.now();
-            // Redirect to the create invoice page with the new ID
             window.location.href = `create-invoice.html?id=${newInvoiceId}`;
         }
-        // ... rest of code unchanged ...
+        
+        function viewInvoice(id) {
+            alert("Viewing invoice: " + id);
+        }
+
+        function logout() {
+            window.location.href = 'login.html';
+        }
+
     </script>
 </body>
 </html>
