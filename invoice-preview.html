@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Preview - InvoiceGen</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        .main-layout { display: grid; grid-template-columns: 260px 1fr; height: 100vh; }
+        .gradient-text { background: linear-gradient(to right, #4F46E5, #06B6D4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    </style>
+</head>
+<body>
+    <div class="main-layout">
+        <!-- Sidebar -->
+        <aside class="bg-slate-800 text-slate-300 flex flex-col">
+            <!-- Sidebar content is the same as create-invoice.html -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="overflow-y-auto p-10">
+            <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 max-w-5xl mx-auto">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-900">Invoice Preview</h1>
+                    <p class="text-slate-500 mt-1">Review your invoice before sending.</p>
+                </div>
+                <div class="flex gap-2">
+                    <a href="create-invoice.html" class="text-sm font-semibold text-slate-600 hover:text-indigo-600 py-2 px-4 rounded-md hover:bg-slate-200"><i class="fa-solid fa-pencil mr-2"></i>Edit</a>
+                    <button class="text-sm font-semibold text-slate-600 hover:text-indigo-600 py-2 px-4 rounded-md hover:bg-slate-200"><i class="fa-solid fa-download mr-2"></i>Download PDF</button>
+                    <button class="text-sm font-semibold bg-indigo-600 text-white py-2 px-4 rounded-lg shadow-sm hover:bg-indigo-700">Send Invoice <i class="fa-solid fa-paper-plane ml-2"></i></button>
+                </div>
+            </header>
+            <div id="invoice_preview" class="bg-white max-w-5xl mx-auto p-12 rounded-lg border border-slate-200 shadow-sm">
+                <!-- Preview is rendered here by JS -->
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const previewContainer = document.getElementById('invoice_preview');
+            const invoiceData = JSON.parse(localStorage.getItem('invoiceDataForPreview'));
+
+            if (!invoiceData) {
+                previewContainer.innerHTML = '<p class="text-center text-red-500">Could not load invoice data. Please go back and create the invoice again.</p>';
+                return;
+            }
+
+            let subtotal = 0;
+            const itemsHTML = invoiceData.items.map(item => {
+                const total = item.quantity * item.rate;
+                subtotal += total;
+                return `<tr class="border-b border-gray-100"><td class="p-3">${item.description}</td><td class="p-3 text-center">${item.quantity}</td><td class="p-3 text-right">$${item.rate.toFixed(2)}</td><td class="p-3 text-right font-medium">$${total.toFixed(2)}</td></tr>`;
+            }).join('');
+            
+            const taxAmount = (subtotal * invoiceData.taxRate) / 100;
+            const total = subtotal + taxAmount - invoiceData.discountAmount;
+
+            let summaryHTML = `<div class="flex justify-between"><span class="text-gray-600">Subtotal</span><span class="font-medium">$${subtotal.toFixed(2)}</span></div>`;
+            if (invoiceData.taxRate > 0) summaryHTML += `<div class="flex justify-between"><span class="text-gray-600">Tax (${invoiceData.taxRate}%)</span><span class="font-medium">$${taxAmount.toFixed(2)}</span></div>`;
+            if (invoiceData.discountAmount > 0) summaryHTML += `<div class="flex justify-between"><span class="text-gray-600">Discount</span><span class="font-medium">-$${invoiceData.discountAmount.toFixed(2)}</span></div>`;
+            summaryHTML += `<hr class="my-2 border-gray-200"><div class="flex justify-between font-bold text-xl"><span>Total Due</span><span class="gradient-text">$${total.toFixed(2)}</span></div>`;
+
+            previewContainer.innerHTML = `
+                <div class="flex justify-between items-start mb-10"><div><h1 class="text-2xl font-bold text-gray-900">${invoiceData.fromName}</h1><p class="text-gray-500 text-sm whitespace-pre-line">${invoiceData.fromAddress}</p></div><div class="text-right"><h2 class="text-4xl font-bold uppercase text-gray-300">Invoice</h2><p class="text-gray-600 mt-1 font-semibold">#${invoiceData.invNumber}</p></div></div>
+                <div class="grid grid-cols-2 gap-4 mb-10"><div><h3 class="text-sm font-semibold text-gray-500 uppercase mb-1">Bill To:</h3><p class="font-bold text-gray-800">${invoiceData.clientName}</p><p class="text-gray-500 text-sm whitespace-pre-line">${invoiceData.toAddress}</p></div><div class="text-right"><div class="mb-2"><span class="text-sm font-semibold text-gray-500 uppercase">Date Issued: </span><span class="font-medium text-gray-800">${new Date(invoiceData.dateIssued + 'T00:00:00').toLocaleDateString()}</span></div><div><span class="text-sm font-semibold text-gray-500 uppercase">Due Date: </span><span class="font-medium text-gray-800">${new Date(invoiceData.dateDue + 'T00:00:00').toLocaleDateString()}</span></div></div></div>
+                <table class="w-full mb-8"><thead><tr class="bg-slate-100 text-left text-slate-600 uppercase text-sm"><th class="p-3 font-semibold rounded-l-lg">Description</th><th class="p-3 font-semibold text-center w-20">Qty</th><th class="p-3 font-semibold text-right w-32">Rate</th><th class="p-3 font-semibold text-right w-32 rounded-r-lg">Total</th></tr></thead><tbody>${itemsHTML}</tbody></table>
+                <div class="flex justify-end mb-8"><div class="w-full max-w-xs space-y-2">${summaryHTML}</div></div>
+                <div class="border-t-2 border-gray-100 pt-4"><h3 class="font-semibold mb-1 text-gray-600">Notes</h3><p class="text-gray-500 text-sm whitespace-pre-line">${invoiceData.notes || 'Thank you for your business!'}</p></div>`;
+        });
+    </script>
+</body>
+</html>
+
