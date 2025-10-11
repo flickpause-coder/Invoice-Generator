@@ -4,348 +4,307 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Invoices - InvoiceGen</title>
+    
+    <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <script src="./auth-improved.js"></script>
-    <script src="./js/dataStore.js"></script>
-    <script src="./js/pdfGenerator.js"></script>
-    <script src="./js/modalSystem.js"></script>
-    <script src="./js/paymentManager.js"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f9fafb;
-        }
-        .invoice-row:hover { background-color: #f8fafc; }
-        .status-badge { padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 500; text-transform: capitalize; }
-        .status-paid { background-color: #dcfce7; color: #166534; }
-        .status-sent { background-color: #dbeafe; color: #1e40af; }
-        .status-overdue { background-color: #fee2e2; color: #991b1b; }
-        .status-draft { background-color: #e5e7eb; color: #374151; }
-        .user-menu { transform: translateY(-10px); opacity: 0; pointer-events: none; transition: all 0.2s ease; }
-        .user-menu.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
-        .action-btn { transition: all 0.2s ease; }
-        .action-btn:hover { transform: scale(1.1); }
+        body { font-family: 'Inter', sans-serif; background-color: #f9fafb; }
+        .main-layout { display: grid; grid-template-columns: 260px 1fr; height: 100vh; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #e2e8f0; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .toast-enter { animation: toastIn 0.5s ease-out forwards; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <h1 class="text-2xl font-bold text-gray-900">InvoiceGen</h1>
-                    </div>
-                </div>
-                <div class="hidden md:flex items-center space-x-8">
-                    <a href="index.html" class="nav-link text-gray-600 hover:text-gray-900">Dashboard</a>
-                    <a href="invoices.html" class="nav-link text-blue-600 font-medium">Invoices</a>
-                    <a href="clients.html" class="nav-link text-gray-600 hover:text-gray-900">Clients</a>
-                    <a href="invoice-design.html" class="nav-link text-gray-600 hover:text-gray-900">Invoice Design</a>
-                    <a href="settings.html" class="nav-link text-gray-600 hover:text-gray-900">Settings</a>
-                </div>
-                <div class="relative">
-                    <button id="user-menu-button" class="flex items-center space-x-3 text-gray-700 hover:text-gray-900 focus:outline-none">
-                        <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                            <span class="text-white text-sm font-medium">TU</span>
-                        </div>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </nav>
+<body>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">Invoice Management</h1>
-                <p class="text-gray-600 mt-1">Oversee all your invoices and track their status.</p>
+    <div class="main-layout">
+        <!-- ==== Sidebar Navigation ==== -->
+        <aside class="bg-slate-800 text-slate-300 flex flex-col">
+            <div class="h-16 flex items-center px-6 bg-slate-900/50">
+                <i class="fa-solid fa-rocket text-3xl text-indigo-500"></i>
+                <span class="ml-3 text-lg font-extrabold text-white">InvoiceGen</span>
             </div>
-            <button onclick="createInvoice()" class="mt-4 md:mt-0 bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors shadow-sm flex items-center">
-                <i class="fas fa-plus mr-2"></i>Create New Invoice
-            </button>
-        </header>
+            <nav class="flex-1 px-4 py-4 space-y-2">
+                <a href="dashboard.html" class="flex items-center px-4 py-2.5 hover:bg-slate-700/50 rounded-lg"><i class="fa-solid fa-chart-pie w-6 h-6"></i><span class="ml-3">Dashboard</span></a>
+                <a href="invoices.html" class="flex items-center px-4 py-2.5 text-white bg-slate-700/80 rounded-lg font-semibold"><i class="fa-solid fa-file-invoice w-6 h-6 text-indigo-400"></i><span class="ml-3">Invoices</span></a>
+                <a href="clients.html" class="flex items-center px-4 py-2.5 hover:bg-slate-700/50 rounded-lg"><i class="fa-solid fa-users w-6 h-6"></i><span class="ml-3">Clients</span></a>
+                <a href="reports.html" class="flex items-center px-4 py-2.5 hover:bg-slate-700/50 rounded-lg"><i class="fa-solid fa-chart-line w-6 h-6"></i><span class="ml-3">Reports</span></a>
+                <a href="settings.html" class="flex items-center px-4 py-2.5 hover:bg-slate-700/50 rounded-lg"><i class="fa-solid fa-gear w-6 h-6"></i><span class="ml-3">Settings</span></a>
+            </nav>
+            <div class="px-4 py-4 border-t border-slate-700">
+                 <a href="#" class="flex items-center w-full p-2 rounded-lg hover:bg-slate-700">
+                    <img src="https://i.pravatar.cc/40?u=a042581f4e29026704d" alt="User Avatar" class="w-10 h-10 rounded-full">
+                    <div class="ml-3"><p class="text-sm font-semibold text-white">Alex Hartman</p><p class="text-xs text-slate-400">View Profile</p></div>
+                 </a>
+            </div>
+        </aside>
 
-        <!-- Stats Cards -->
-        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                <h3 class="text-sm font-medium text-gray-500">Total Outstanding</h3>
-                <p id="stat-outstanding" class="text-2xl font-semibold text-gray-900 mt-1">$0.00</p>
-            </div>
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                <h3 class="text-sm font-medium text-gray-500">Overdue</h3>
-                <p id="stat-overdue" class="text-2xl font-semibold text-red-600 mt-1">$0.00</p>
-            </div>
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                <h3 class="text-sm font-medium text-gray-500">Paid (Last 30 days)</h3>
-                <p id="stat-paid" class="text-2xl font-semibold text-green-600 mt-1">$0.00</p>
-            </div>
-        </section>
-
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-            <!-- Filters -->
-            <div class="p-4 border-b border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4">
-                <div class="w-full md:w-1/2">
-                    <input type="text" id="search-input" placeholder="Search by invoice #, client name..." class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+        <!-- ==== Main Content Area ==== -->
+        <main class="overflow-y-auto px-10 py-8">
+            <!-- Header -->
+            <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-900">Invoices</h1>
+                    <p class="text-slate-500 mt-1">Manage all your invoices in one place.</p>
                 </div>
-                <div class="flex gap-4">
-                    <select id="status-filter" class="border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">All Statuses</option>
-                        <option value="paid">Paid</option>
-                        <option value="sent">Sent</option>
-                        <option value="overdue">Overdue</option>
-                        <option value="draft">Draft</option>
-                    </select>
-                    <select id="sort-filter" class="border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                        <option value="date_desc">Newest First</option>
-                        <option value="date_asc">Oldest First</option>
-                        <option value="amount_desc">Amount (High-Low)</option>
-                        <option value="amount_asc">Amount (Low-High)</option>
-                    </select>
+                <a href="create-invoice.html" class="bg-indigo-600 text-white font-semibold px-5 py-2.5 rounded-lg shadow-sm hover:bg-indigo-700 transition-colors duration-200 flex items-center justify-center">
+                    <i class="fa-solid fa-plus mr-2"></i> Create New Invoice
+                </a>
+            </header>
+            
+            <div id="bulk-actions-bar" class="hidden bg-white rounded-lg p-3 mb-6 flex justify-between items-center border border-slate-200 shadow-sm fade-in">
+                <div>
+                    <span id="selected-count" class="font-bold text-indigo-600">0</span> invoices selected
+                </div>
+                <div class="flex items-center gap-4">
+                    <button class="text-sm font-semibold text-slate-600 hover:text-indigo-600"><i class="fa-solid fa-check-circle mr-2"></i>Mark as Paid</button>
+                    <button class="text-sm font-semibold text-slate-600 hover:text-red-600"><i class="fa-solid fa-trash-can mr-2"></i>Delete Selected</button>
+                </div>
+            </div>
+
+            <!-- Invoice Filters and Search -->
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                <div id="filter-buttons" class="flex gap-2 bg-slate-100 p-1 rounded-lg">
+                    <button data-filter="All" class="filter-btn px-4 py-1.5 text-sm font-semibold text-slate-800 bg-white rounded-md shadow-sm">All</button>
+                    <button data-filter="Paid" class="filter-btn px-4 py-1.5 text-sm font-semibold text-slate-500 hover:bg-slate-200 rounded-md">Paid</button>
+                    <button data-filter="Overdue" class="filter-btn px-4 py-1.5 text-sm font-semibold text-slate-500 hover:bg-slate-200 rounded-md">Overdue</button>
+                    <button data-filter="Pending" class="filter-btn px-4 py-1.5 text-sm font-semibold text-slate-500 hover:bg-slate-200 rounded-md">Pending</button>
+                    <button data-filter="Draft" class="filter-btn px-4 py-1.5 text-sm font-semibold text-slate-500 hover:bg-slate-200 rounded-md">Draft</button>
                 </div>
             </div>
 
             <!-- Invoices Table -->
-            <div id="table-container" class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+            <div class="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-x-auto">
+                <table class="w-full text-sm text-left text-slate-500">
+                    <thead class="text-xs text-slate-700 uppercase bg-slate-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice #</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dates</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            <th scope="col" class="px-6 py-3"><input id="select-all-checkbox" type="checkbox" class="rounded border-slate-300"></th>
+                            <th scope="col" class="px-6 py-3">Status</th>
+                            <th scope="col" class="px-6 py-3">Invoice #</th>
+                            <th scope="col" class="px-6 py-3">Client</th>
+                            <th scope="col" class="px-6 py-3">Due Date</th>
+                            <th scope="col" class="px-6 py-3 text-right">Amount</th>
+                            <th scope="col" class="px-6 py-3 text-center">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200" id="invoice-table-body">
-                    </tbody>
+                    <tbody id="invoices-table-body"></tbody>
                 </table>
             </div>
-            
-            <!-- Empty State -->
-            <div id="empty-state" class="hidden text-center py-16">
-                 <i class="fas fa-file-invoice text-5xl text-gray-300"></i>
-                 <h3 class="mt-4 text-lg font-medium text-gray-900">No invoices found</h3>
-                 <p class="mt-1 text-sm text-gray-500">Get started by creating your first invoice.</p>
-                 <div class="mt-6">
-                    <button onclick="createInvoice()" class="bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors shadow-sm flex items-center mx-auto">
-                        <i class="fas fa-plus mr-2"></i>Create First Invoice
-                    </button>
-                 </div>
-            </div>
+        </main>
+    </div>
 
-            <!-- Pagination -->
-            <div id="pagination-controls" class="p-4 border-t border-gray-200 flex justify-between items-center">
-                <button id="prev-page" class="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">Previous</button>
-                <span id="page-info" class="text-sm text-gray-700">Page 1 of 1</span>
-                <button id="next-page" class="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
-            </div>
-        </div>
+    <!-- Modals & Toasts -->
+    <div id="delete-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"></div>
+    <div id="recurring-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"></div>
+    <div id="toast-notification" class="hidden fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 toast-enter z-50">
+        <i id="toast-icon" class="fa-solid fa-check-circle"></i>
+        <span id="toast-message">Action was successful!</span>
     </div>
 
     <script>
-        let dataStore, modalSystem;
-        let allInvoices = [];
-        let filteredInvoices = [];
-        let currentPage = 1;
-        const itemsPerPage = 10;
-
         document.addEventListener('DOMContentLoaded', function() {
-            dataStore = new DataStore();
-            modalSystem = new ModalSystem();
-            initializeInvoicesPage();
+            let invoicesData = [
+                { status: 'Paid', statusColor: 'green', id: 'INV-012', client: 'Acme Corp', due: '2025-09-15', amount: 2750.00, isRecurring: true },
+                { status: 'Overdue', statusColor: 'red', id: 'INV-005', client: 'Global Industries', due: '2025-09-01', amount: 1000.00, isRecurring: false },
+                { status: 'Pending', statusColor: 'orange', id: 'INV-008', client: 'Innovate LLC', due: '2025-10-15', amount: 2500.00, isRecurring: false },
+                { status: 'Draft', statusColor: 'slate', id: 'INV-014', client: 'Quantum Tech', due: '2025-10-25', amount: 3200.00, isRecurring: false },
+                { status: 'Paid', statusColor: 'green', id: 'INV-011', client: 'Startup Co.', due: '2025-08-20', amount: 1250.00, isRecurring: false },
+            ];
+            
+            let invoiceIdToModify = null;
+            let currentFilter = 'All';
+
+            const tableBody = document.getElementById('invoices-table-body');
+            const selectAllCheckbox = document.getElementById('select-all-checkbox');
+            const bulkActionsBar = document.getElementById('bulk-actions-bar');
+            const selectedCountSpan = document.getElementById('selected-count');
+            const deleteModal = document.getElementById('delete-modal');
+            const recurringModal = document.getElementById('recurring-modal');
+
+            function showToast(message, type = 'success') {
+                const toast = document.getElementById('toast-notification');
+                const toastMessage = document.getElementById('toast-message');
+                toastMessage.textContent = message;
+                toast.classList.remove('hidden');
+                setTimeout(() => toast.classList.add('hidden'), 3000);
+            }
+
+            function renderInvoices() {
+                const filteredInvoices = invoicesData.filter(inv => currentFilter === 'All' || inv.status === currentFilter);
+                tableBody.innerHTML = filteredInvoices.map(invoice => `
+                    <tr class="bg-white border-b hover:bg-slate-50" data-invoice-id="${invoice.id}">
+                        <td class="px-6 py-4"><input type="checkbox" class="row-checkbox rounded border-slate-300"></td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${invoice.statusColor}-100 text-${invoice.statusColor}-800">
+                                    <span class="w-2 h-2 mr-2 bg-${invoice.statusColor}-500 rounded-full"></span>
+                                    ${invoice.status}
+                                </span>
+                                ${invoice.isRecurring ? `<i class="fa-solid fa-repeat text-blue-500" title="Recurring Invoice"></i>` : ''}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 font-medium text-slate-900">${invoice.id}</td>
+                        <td class="px-6 py-4">${invoice.client}</td>
+                        <td class="px-6 py-4">${new Date(invoice.due).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                        <td class="px-6 py-4 text-right font-medium text-slate-900">$${invoice.amount.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center justify-center gap-4">
+                                ${['Overdue', 'Pending'].includes(invoice.status) 
+                                    ? `<button data-action="reminder" class="text-slate-500 hover:text-indigo-600" title="Send Reminder"><i class="fa-solid fa-paper-plane"></i></button>` 
+                                    : `<div class="w-[16px]"></div>`
+                                }
+                                <button data-action="edit" class="text-slate-500 hover:text-indigo-600" title="Edit"><i class="fa-solid fa-pencil"></i></button>
+                                <button data-action="delete" class="text-slate-500 hover:text-red-600" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
+                                <div class="relative">
+                                    <button data-action="toggle-dropdown" class="text-slate-500 hover:text-indigo-600 px-2" title="More Actions"><i class="fa-solid fa-ellipsis-v"></i></button>
+                                    <div class="dropdown-menu hidden absolute right-0 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-slate-200">
+                                        <a href="#" data-action="clone" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">Clone Invoice</a>
+                                        ${invoice.status === 'Paid' ? `<a href="#" data-action="resend-receipt" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">Resend Receipt</a>` : ''}
+                                        <a href="#" data-action="recurring" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">${invoice.isRecurring ? 'Edit Recurring' : 'Make Recurring'}</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('') || `<tr><td colspan="7" class="text-center py-10 text-slate-500">No invoices found.</td></tr>`;
+            }
+
+            function handleTableActions(event) {
+                const targetElement = event.target.closest('[data-action]');
+                if (!targetElement) return;
+
+                const action = targetElement.dataset.action;
+                const invoiceId = targetElement.closest('tr').dataset.invoiceId;
+                invoiceIdToModify = invoiceId;
+
+                if (action === 'toggle-dropdown') {
+                    const dropdownMenu = targetElement.nextElementSibling;
+                    const isHidden = dropdownMenu.classList.contains('hidden');
+                    document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.add('hidden'));
+                    if (isHidden) {
+                        dropdownMenu.classList.remove('hidden');
+                        const rect = dropdownMenu.getBoundingClientRect();
+                        const tableRect = tableBody.parentElement.getBoundingClientRect();
+                        if (rect.bottom > tableRect.bottom) {
+                            dropdownMenu.style.top = 'auto';
+                            dropdownMenu.style.bottom = '100%';
+                        } else {
+                            dropdownMenu.style.top = '100%';
+                            dropdownMenu.style.bottom = 'auto';
+                        }
+                    }
+                    return;
+                }
+                
+                if (action === 'reminder') showToast(`Reminder sent for invoice ${invoiceId}.`);
+                if (action === 'edit') window.location.href = `create-invoice.html?id=${invoiceId}`;
+                if (action === 'resend-receipt') showToast(`Receipt resent for invoice ${invoiceId}.`);
+                
+                if (action === 'clone') {
+                    const invoiceToClone = invoicesData.find(inv => inv.id === invoiceId);
+                    if (invoiceToClone) {
+                        const newInvoice = { ...invoiceToClone, id: `INV-${String(Date.now()).slice(-4)}`, status: 'Draft', statusColor: 'slate', isRecurring: false };
+                        invoicesData.unshift(newInvoice);
+                        renderInvoices();
+                        showToast(`Invoice cloned as ${newInvoice.id}`);
+                    }
+                }
+                
+                if (action === 'delete') {
+                    deleteModal.innerHTML = `<div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md text-center"><div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100"><i class="fa-solid fa-trash-can text-red-600"></i></div><h3 class="text-lg font-medium text-gray-900 mt-5">Delete Invoice</h3><p class="mt-2 text-sm text-gray-500">Are you sure you want to delete invoice <strong>${invoiceId}</strong>?</p><div class="mt-6 flex justify-center gap-4"><button id="cancel-delete" class="px-6 py-2 rounded-lg border">Cancel</button><button id="confirm-delete" class="px-6 py-2 rounded-lg bg-red-600 text-white font-semibold">Confirm</button></div></div>`;
+                    deleteModal.classList.remove('hidden');
+                }
+                
+                if (action === 'recurring') {
+                    recurringModal.innerHTML = `<div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md"><h3 class="text-lg font-medium text-gray-900 mb-4">Set Recurring Invoice</h3><p class="text-sm text-gray-500 mb-4">Automatically send this invoice on a schedule.</p><div><label for="frequency" class="block text-sm font-medium text-gray-700">Frequency</label><select id="frequency" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"><option>Monthly</option><option>Quarterly</option><option>Yearly</option></select></div><div class="mt-6 flex justify-end gap-4"><button id="cancel-recurring" class="px-6 py-2 rounded-lg border">Cancel</button><button id="save-recurring" class="px-6 py-2 rounded-lg bg-indigo-600 text-white font-semibold">Save Settings</button></div></div>`;
+                    recurringModal.classList.remove('hidden');
+                }
+            }
+            
+            function updateSelectAllState() {
+                const rowCheckboxes = tableBody.querySelectorAll('.row-checkbox');
+                const selectedCount = Array.from(rowCheckboxes).filter(cb => cb.checked).length;
+                selectAllCheckbox.checked = rowCheckboxes.length > 0 && selectedCount === rowCheckboxes.length;
+            }
+
+            function toggleBulkActionsBar(show) {
+                if (show) {
+                    selectedCountSpan.textContent = tableBody.querySelectorAll('.row-checkbox:checked').length;
+                    bulkActionsBar.classList.remove('hidden');
+                } else {
+                    bulkActionsBar.classList.add('hidden');
+                }
+            }
+
+            function initEventListeners() {
+                tableBody.addEventListener('click', handleTableActions);
+                tableBody.addEventListener('change', e => { if (e.target.matches('.row-checkbox')) { updateSelectAllState(); } });
+
+                selectAllCheckbox.addEventListener('change', () => {
+                    const isChecked = selectAllCheckbox.checked;
+                    tableBody.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = isChecked);
+                    toggleBulkActionsBar(isChecked);
+                });
+
+                document.getElementById('filter-buttons').addEventListener('click', (e) => {
+                    const button = e.target.closest('.filter-btn');
+                    if (!button) return;
+                    currentFilter = button.dataset.filter;
+                    document.querySelectorAll('.filter-btn').forEach(btn => {
+                        btn.classList.remove('text-slate-800', 'bg-white', 'shadow-sm');
+                        btn.classList.add('text-slate-500', 'hover:bg-slate-200');
+                    });
+                    button.classList.remove('text-slate-500', 'hover:bg-slate-200');
+                    button.classList.add('text-slate-800', 'bg-white', 'shadow-sm');
+                    renderInvoices();
+                    selectAllCheckbox.checked = false;
+                    toggleBulkActionsBar(false);
+                });
+                
+                document.body.addEventListener('click', function(event) {
+                    if (!event.target.closest('.relative')) {
+                        document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.add('hidden'));
+                    }
+                    if (event.target.id === 'cancel-delete' || event.target.id === 'cancel-recurring') {
+                        deleteModal.classList.add('hidden');
+                        recurringModal.classList.add('hidden');
+                    }
+                    if (event.target.id === 'confirm-delete') {
+                        const index = invoicesData.findIndex(inv => inv.id === invoiceIdToModify);
+                        if (index > -1) invoicesData.splice(index, 1);
+                        renderInvoices();
+                        deleteModal.classList.add('hidden');
+                        showToast(`Invoice ${invoiceIdToModify} deleted.`, 'success');
+                        updateSelectAllState();
+                        toggleBulkActionsBar(selectAllCheckbox.checked);
+                    }
+                    if (event.target.id === 'save-recurring') {
+                        const invoice = invoicesData.find(inv => inv.id === invoiceIdToModify);
+                        if(invoice) invoice.isRecurring = true;
+                        renderInvoices();
+                        recurringModal.classList.add('hidden');
+                        showToast(`Invoice ${invoiceIdToModify} is now recurring.`);
+                    }
+                });
+            }
+
+            renderInvoices();
+            initEventListeners();
         });
-
-        function initializeInvoicesPage() {
-            setupEventListeners();
-            loadInvoiceData();
-            
-            const urlParams = new URLSearchParams(window.location.search);
-            const filter = urlParams.get('filter');
-            if (filter) {
-                document.getElementById('status-filter').value = filter;
-            }
-            applyFiltersAndSort();
-        }
-        
-        function setupEventListeners() {
-            document.getElementById('search-input').addEventListener('input', applyFiltersAndSort);
-            document.getElementById('status-filter').addEventListener('change', applyFiltersAndSort);
-            document.getElementById('sort-filter').addEventListener('change', applyFiltersAndSort);
-            document.getElementById('prev-page').addEventListener('click', () => changePage(-1));
-            document.getElementById('next-page').addEventListener('click', () => changePage(1));
-        }
-
-        function loadInvoiceData() {
-            allInvoices = dataStore.getInvoices();
-            updateStats();
-        }
-
-        function updateStats() {
-            const now = new Date();
-            const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
-
-            let outstanding = 0;
-            let overdue = 0;
-            let paidLast30Days = 0;
-
-            allInvoices.forEach(inv => {
-                if (inv.status === 'sent') {
-                    outstanding += inv.total || 0;
-                } else if (inv.status === 'overdue') {
-                    outstanding += inv.total || 0;
-                    overdue += inv.total || 0;
-                } else if (inv.status === 'paid' && new Date(inv.date) >= thirtyDaysAgo) {
-                    paidLast30Days += inv.total || 0;
-                }
-            });
-
-            document.getElementById('stat-outstanding').textContent = `$${outstanding.toFixed(2)}`;
-            document.getElementById('stat-overdue').textContent = `$${overdue.toFixed(2)}`;
-            document.getElementById('stat-paid').textContent = `$${paidLast30Days.toFixed(2)}`;
-        }
-        
-        function applyFiltersAndSort() {
-            const searchTerm = document.getElementById('search-input').value.toLowerCase();
-            const statusFilter = document.getElementById('status-filter').value;
-            const sortBy = document.getElementById('sort-filter').value;
-
-            filteredInvoices = allInvoices.filter(invoice => {
-                const client = dataStore.getClient(invoice.clientId) || {};
-                const searchableText = `${invoice.number} ${client.name}`.toLowerCase();
-                
-                const matchesSearch = searchTerm ? searchableText.includes(searchTerm) : true;
-                const matchesStatus = statusFilter ? invoice.status === statusFilter : true;
-                
-                return matchesSearch && matchesStatus;
-            });
-
-            filteredInvoices.sort((a, b) => {
-                switch (sortBy) {
-                    case 'date_asc': return new Date(a.date) - new Date(b.date);
-                    case 'amount_desc': return (b.total || 0) - (a.total || 0);
-                    case 'amount_asc': return (a.total || 0) - (b.total || 0);
-                    case 'date_desc':
-                    default:
-                        return new Date(b.date) - new Date(a.date);
-                }
-            });
-            
-            currentPage = 1;
-            renderPage();
-        }
-
-        function renderPage() {
-            const emptyState = document.getElementById('empty-state');
-            const tableContainer = document.getElementById('table-container');
-            const paginationControls = document.getElementById('pagination-controls');
-            const tbody = document.getElementById('invoice-table-body');
-            
-            if (filteredInvoices.length === 0) {
-                emptyState.classList.remove('hidden');
-                tableContainer.classList.add('hidden');
-                paginationControls.classList.add('hidden');
-                return;
-            }
-
-            emptyState.classList.add('hidden');
-            tableContainer.classList.remove('hidden');
-            paginationControls.classList.remove('hidden');
-
-            const totalPages = Math.ceil(filteredInvoices.length / itemsPerPage);
-            const pageInfo = document.getElementById('page-info');
-            const prevButton = document.getElementById('prev-page');
-            const nextButton = document.getElementById('next-page');
-
-            pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-            prevButton.disabled = currentPage === 1;
-            nextButton.disabled = currentPage === totalPages;
-
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = startIndex + itemsPerPage;
-            const pageItems = filteredInvoices.slice(startIndex, endIndex);
-
-            tbody.innerHTML = pageItems.map(invoice => {
-                const client = dataStore.getClient(invoice.clientId) || { id: 'unknown', name: 'Unknown Client' };
-                const initials = client.name.split(' ').map(n=>n[0]).join('').toUpperCase();
-                const avatarColor = getAvatarColor(client.id);
-
-                return `
-                    <tr class="invoice-row">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0 h-10 w-10 rounded-full ${avatarColor} flex items-center justify-center">
-                                    <span class="text-white font-medium">${initials}</span>
-                                </div>
-                                <div class="ml-4">
-                                    <div class="text-sm font-medium text-gray-900">${client.name}</div>
-                                    <div class="text-sm text-gray-500">${client.email || ''}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">${invoice.number}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">$${(invoice.total || 0).toFixed(2)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <div>Issued: ${formatDate(invoice.date)}</div>
-                            <div>Due: ${formatDate(invoice.dueDate)}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="status-badge ${getStatusBadgeClass(invoice.status)}">${invoice.status}</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div class="flex justify-end items-center space-x-3">
-                                <button onclick="viewInvoice('${invoice.id}')" title="View" class="action-btn text-gray-400 hover:text-blue-600"><i class="fas fa-eye"></i></button>
-                                <button onclick="editInvoice('${invoice.id}')" title="Edit" class="action-btn text-gray-400 hover:text-green-600"><i class="fas fa-pencil-alt"></i></button>
-                                <button onclick="downloadInvoice('${invoice.id}')" title="Download" class="action-btn text-gray-400 hover:text-indigo-600"><i class="fas fa-download"></i></button>
-                                <button onclick="deleteInvoice('${invoice.id}')" title="Delete" class="action-btn text-gray-400 hover:text-red-600"><i class="fas fa-trash-alt"></i></button>
-                            </div>
-                        </td>
-                    </tr>`;
-            }).join('');
-        }
-
-        function changePage(direction) {
-            currentPage += direction;
-            renderPage();
-        }
-
-        function getStatusBadgeClass(status) {
-            return `status-${status}`;
-        }
-        
-        function getAvatarColor(id) {
-            const colors = ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-red-500', 'bg-yellow-500', 'bg-indigo-500'];
-            const hash = id.split('').reduce((acc, char) => char.charCodeAt(0) + ((acc << 5) - acc), 0);
-            return colors[Math.abs(hash) % colors.length];
-        }
-
-        function formatDate(dateString) {
-            if (!dateString) return 'N/A';
-            return new Date(dateString + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        }
-
-        function createInvoice() {
-            window.location.href = 'create-invoice.html';
-        }
-        
-        function viewInvoice(id) { alert(`Viewing invoice: ${id}`); }
-        function editInvoice(id) { window.location.href = `create-invoice.html?id=${id}`; }
-        function downloadInvoice(id) { alert(`Downloading PDF for invoice: ${id}`); }
-        function deleteInvoice(id) { 
-            if(confirm('Are you sure you want to delete this invoice?')) {
-                alert(`Deleting invoice: ${id}`);
-                // dataStore.deleteInvoice(id); // Future implementation
-                // loadInvoiceData();
-                // applyFiltersAndSort();
-            }
-        }
-
     </script>
 </body>
 </html>
