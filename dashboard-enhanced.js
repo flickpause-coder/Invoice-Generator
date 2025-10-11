@@ -1,752 +1,262 @@
-// Enhanced Dashboard Analytics for InvoiceGen
-// Advanced features including real-time updates and comprehensive reporting
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InvoiceGen Command Centre</title>
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <!-- ApexCharts for charts -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
-class EnhancedDashboard {
-    constructor() {
-        this.authService = window.ImprovedAuthService || window.AuthService;
-        this.charts = {};
-        this.refreshInterval = null;
-        this.updateFrequency = 30000; // 30 seconds
-        this.debugMode = localStorage.getItem('debugMode') === 'true';
-        this.init();
-    }
-
-    log(message, data = null) {
-        if (this.debugMode) {
-            console.log(`[EnhancedDashboard] ${message}`, data);
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* A very light, clean gray */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
-    }
-
-    init() {
-        this.log('🚀 Initializing Enhanced Dashboard');
-        this.setupEventListeners();
-        this.initializeCharts();
-        this.startAutoRefresh();
-        this.loadDashboardData();
-        this.initializeAnimations();
-    }
-
-    setupEventListeners() {
-        // Real-time refresh toggle
-        const refreshToggle = document.getElementById('auto-refresh-toggle');
-        if (refreshToggle) {
-            refreshToggle.addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    this.startAutoRefresh();
-                } else {
-                    this.stopAutoRefresh();
-                }
-            });
+        .main-grid {
+            display: grid;
+            grid-template-columns: 260px 1fr 320px;
+            height: 100vh;
         }
+        /* Custom scrollbar for a polished look */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #e2e8f0; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+    </style>
+</head>
+<body>
 
-        // Manual refresh button
-        const refreshButton = document.getElementById('manual-refresh');
-        if (refreshButton) {
-            refreshButton.addEventListener('click', () => {
-                this.refreshDashboard();
-            });
-        }
-
-        // Chart type switcher
-        const chartTypeButtons = document.querySelectorAll('.chart-type-btn');
-        chartTypeButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                this.switchChartType(e.target.dataset.chartType);
-            });
-        });
-
-        // Time period selector
-        const periodSelector = document.getElementById('period-selector');
-        if (periodSelector) {
-            periodSelector.addEventListener('change', (e) => {
-                this.updateChartsForPeriod(e.target.value);
-            });
-        }
-    }
-
-    initializeCharts() {
-        this.log('📊 Initializing charts');
-        
-        // Revenue Chart
-        this.initializeRevenueChart();
-        
-        // Client Analytics Chart
-        this.initializeClientChart();
-        
-        // Invoice Status Chart
-        this.initializeStatusChart();
-        
-        // Growth Metrics Chart
-        this.initializeGrowthChart();
-    }
-
-    initializeRevenueChart() {
-        const chartElement = document.getElementById('revenue-chart');
-        if (!chartElement) return;
-
-        this.charts.revenue = echarts.init(chartElement);
-        
-        const option = {
-            title: {
-                text: 'Revenue Overview',
-                left: 'center',
-                textStyle: {
-                    color: '#374151',
-                    fontSize: 18,
-                    fontWeight: 'bold'
-                }
-            },
-            tooltip: {
-                trigger: 'axis',
-                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                borderColor: '#e5e7eb',
-                textStyle: {
-                    color: '#374151'
-                },
-                formatter: function(params) {
-                    let result = `<div style="font-weight: bold; margin-bottom: 8px;">${params[0].axisValue}</div>`;
-                    params.forEach(param => {
-                        result += `<div style="margin: 4px 0;">
-                            <span style="display: inline-block; width: 10px; height: 10px; background: ${param.color}; border-radius: 50%; margin-right: 8px;"></span>
-                            ${param.seriesName}: $${param.value.toLocaleString()}
-                        </div>`;
-                    });
-                    return result;
-                }
-            },
-            legend: {
-                data: ['Revenue', 'Pending', 'Overdue'],
-                bottom: 10,
-                textStyle: {
-                    color: '#6b7280'
-                }
-            },
-            grid: {
-                left: '3%',
-                right: '4%',
-                bottom: '15%',
-                containLabel: true
-            },
-            xAxis: {
-                type: 'category',
-                boundaryGap: false,
-                data: this.getLast6Months(),
-                axisLine: {
-                    lineStyle: {
-                        color: '#e5e7eb'
-                    }
-                },
-                axisLabel: {
-                    color: '#6b7280'
-                }
-            },
-            yAxis: {
-                type: 'value',
-                axisLine: {
-                    lineStyle: {
-                        color: '#e5e7eb'
-                    }
-                },
-                axisLabel: {
-                    color: '#6b7280',
-                    formatter: '${value}'
-                },
-                splitLine: {
-                    lineStyle: {
-                        color: '#f3f4f6'
-                    }
-                }
-            },
-            series: [
-                {
-                    name: 'Revenue',
-                    type: 'line',
-                    smooth: true,
-                    data: this.generateRevenueData(),
-                    lineStyle: {
-                        color: '#10b981',
-                        width: 3
-                    },
-                    areaStyle: {
-                        color: {
-                            type: 'linear',
-                            x: 0,
-                            y: 0,
-                            x2: 0,
-                            y2: 1,
-                            colorStops: [{
-                                offset: 0, color: 'rgba(16, 185, 129, 0.3)'
-                            }, {
-                                offset: 1, color: 'rgba(16, 185, 129, 0.05)'
-                            }]
-                        }
-                    },
-                    itemStyle: {
-                        color: '#10b981'
-                    }
-                },
-                {
-                    name: 'Pending',
-                    type: 'line',
-                    smooth: true,
-                    data: this.generatePendingData(),
-                    lineStyle: {
-                        color: '#f59e0b',
-                        width: 2
-                    },
-                    itemStyle: {
-                        color: '#f59e0b'
-                    }
-                },
-                {
-                    name: 'Overdue',
-                    type: 'line',
-                    smooth: true,
-                    data: this.generateOverdueData(),
-                    lineStyle: {
-                        color: '#ef4444',
-                        width: 2
-                    },
-                    itemStyle: {
-                        color: '#ef4444'
-                    }
-                }
-            ]
-        };
-
-        this.charts.revenue.setOption(option);
-    }
-
-    initializeClientChart() {
-        const chartElement = document.getElementById('client-chart');
-        if (!chartElement) return;
-
-        this.charts.client = echarts.init(chartElement);
-        
-        const option = {
-            title: {
-                text: 'Client Analytics',
-                left: 'center',
-                textStyle: {
-                    color: '#374151',
-                    fontSize: 16,
-                    fontWeight: 'bold'
-                }
-            },
-            tooltip: {
-                trigger: 'item',
-                formatter: '{a} <br/>{b}: {c} ({d}%)'
-            },
-            legend: {
-                orient: 'vertical',
-                left: 'left',
-                textStyle: {
-                    color: '#6b7280'
-                }
-            },
-            series: [
-                {
-                    name: 'Client Revenue',
-                    type: 'pie',
-                    radius: ['40%', '70%'],
-                    avoidLabelOverlap: false,
-                    itemStyle: {
-                        borderRadius: 10,
-                        borderColor: '#fff',
-                        borderWidth: 2
-                    },
-                    label: {
-                        show: false,
-                        position: 'center'
-                    },
-                    emphasis: {
-                        label: {
-                            show: true,
-                            fontSize: '18',
-                            fontWeight: 'bold'
-                        }
-                    },
-                    labelLine: {
-                        show: false
-                    },
-                    data: this.getClientRevenueData()
-                }
-            ]
-        };
-
-        this.charts.client.setOption(option);
-    }
-
-    initializeStatusChart() {
-        const chartElement = document.getElementById('status-chart');
-        if (!chartElement) return;
-
-        this.charts.status = echarts.init(chartElement);
-        
-        const statusData = this.getInvoiceStatusData();
-        
-        const option = {
-            title: {
-                text: 'Invoice Status Distribution',
-                left: 'center',
-                textStyle: {
-                    color: '#374151',
-                    fontSize: 16,
-                    fontWeight: 'bold'
-                }
-            },
-            tooltip: {
-                trigger: 'item',
-                formatter: '{a} <br/>{b}: {c} invoices ({d}%)'
-            },
-            series: [
-                {
-                    name: 'Invoice Status',
-                    type: 'pie',
-                    radius: '70%',
-                    data: statusData,
-                    emphasis: {
-                        itemStyle: {
-                            shadowBlur: 10,
-                            shadowOffsetX: 0,
-                            shadowColor: 'rgba(0, 0, 0, 0.5)'
-                        }
-                    },
-                    itemStyle: {
-                        borderRadius: 5,
-                        borderColor: '#fff',
-                        borderWidth: 2
-                    }
-                }
-            ]
-        };
-
-        this.charts.status.setOption(option);
-    }
-
-    initializeGrowthChart() {
-        const chartElement = document.getElementById('growth-chart');
-        if (!chartElement) return;
-
-        this.charts.growth = echarts.init(chartElement);
-        
-        const option = {
-            title: {
-                text: 'Growth Metrics',
-                left: 'center',
-                textStyle: {
-                    color: '#374151',
-                    fontSize: 16,
-                    fontWeight: 'bold'
-                }
-            },
-            tooltip: {
-                trigger: 'axis',
-                axisPointer: {
-                    type: 'shadow'
-                }
-            },
-            grid: {
-                left: '3%',
-                right: '4%',
-                bottom: '3%',
-                containLabel: true
-            },
-            xAxis: {
-                type: 'category',
-                data: ['Clients', 'Invoices', 'Revenue', 'Growth'],
-                axisLine: {
-                    lineStyle: {
-                        color: '#e5e7eb'
-                    }
-                },
-                axisLabel: {
-                    color: '#6b7280'
-                }
-            },
-            yAxis: {
-                type: 'value',
-                axisLine: {
-                    lineStyle: {
-                        color: '#e5e7eb'
-                    }
-                },
-                axisLabel: {
-                    color: '#6b7280'
-                },
-                splitLine: {
-                    lineStyle: {
-                        color: '#f3f4f6'
-                    }
-                }
-            },
-            series: [
-                {
-                    name: 'Current Period',
-                    type: 'bar',
-                    data: this.getGrowthMetrics(),
-                    itemStyle: {
-                        color: {
-                            type: 'linear',
-                            x: 0,
-                            y: 0,
-                            x2: 0,
-                            y2: 1,
-                            colorStops: [{
-                                offset: 0, color: '#3b82f6'
-                            }, {
-                                offset: 1, color: '#1d4ed8'
-                            }]
-                        },
-                        borderRadius: [4, 4, 0, 0]
-                    }
-                }
-            ]
-        };
-
-        this.charts.growth.setOption(option);
-    }
-
-    // Data generation methods
-    getLast6Months() {
-        const months = [];
-        const today = new Date();
-        
-        for (let i = 5; i >= 0; i--) {
-            const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
-            months.push(date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }));
-        }
-        
-        return months;
-    }
-
-    generateRevenueData() {
-        // Generate realistic revenue data
-        return [12500, 15800, 13200, 18900, 16700, 21400];
-    }
-
-    generatePendingData() {
-        return [3200, 4100, 3800, 5200, 4600, 5800];
-    }
-
-    generateOverdueData() {
-        return [800, 1200, 900, 1500, 1100, 1800];
-    }
-
-    getClientRevenueData() {
-        return [
-            { value: 15400, name: 'Acme Corp', itemStyle: { color: '#3b82f6' } },
-            { value: 12800, name: 'Tech Solutions', itemStyle: { color: '#10b981' } },
-            { value: 8900, name: 'Global Industries', itemStyle: { color: '#f59e0b' } },
-            { value: 6700, name: 'Startup Co', itemStyle: { color: '#ef4444' } },
-            { value: 4200, name: 'Others', itemStyle: { color: '#6b7280' } }
-        ];
-    }
-
-    getInvoiceStatusData() {
-        return [
-            { value: 45, name: 'Paid', itemStyle: { color: '#10b981' } },
-            { value: 23, name: 'Sent', itemStyle: { color: '#3b82f6' } },
-            { value: 12, name: 'Draft', itemStyle: { color: '#6b7280' } },
-            { value: 8, name: 'Overdue', itemStyle: { color: '#ef4444' } }
-        ];
-    }
-
-    getGrowthMetrics() {
-        return [28, 156, 89, 23]; // Clients, Invoices, Revenue (K), Growth %
-    }
-
-    loadDashboardData() {
-        this.log('📊 Loading dashboard data');
-        
-        // Update statistics cards
-        this.updateStatisticsCards();
-        
-        // Update recent activity
-        this.updateRecentActivity();
-        
-        // Update notifications
-        this.updateNotifications();
-    }
-
-    updateStatisticsCards() {
-        const stats = this.calculateStatistics();
-        
-        // Update total revenue
-        const totalRevenueEl = document.getElementById('total-revenue');
-        if (totalRevenueEl) {
-            this.animateNumber(totalRevenueEl, stats.totalRevenue, '$');
-        }
-        
-        // Update pending amount
-        const pendingAmountEl = document.getElementById('pending-amount');
-        if (pendingAmountEl) {
-            this.animateNumber(pendingAmountEl, stats.pendingAmount, '$');
-        }
-        
-        // Update overdue amount
-        const overdueAmountEl = document.getElementById('overdue-amount');
-        if (overdueAmountEl) {
-            this.animateNumber(overdueAmountEl, stats.overdueAmount, '$');
-        }
-        
-        // Update total clients
-        const totalClientsEl = document.getElementById('total-clients');
-        if (totalClientsEl) {
-            this.animateNumber(totalClientsEl, stats.totalClients);
-        }
-    }
-
-    calculateStatistics() {
-        const invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
-        const clients = JSON.parse(localStorage.getItem('clients') || '[]');
-        
-        let totalRevenue = 0;
-        let pendingAmount = 0;
-        let overdueAmount = 0;
-        
-        invoices.forEach(invoice => {
-            if (invoice.status === 'paid') {
-                totalRevenue += invoice.total || 0;
-            } else if (invoice.status === 'sent') {
-                pendingAmount += invoice.total || 0;
-            } else if (invoice.status === 'overdue') {
-                overdueAmount += invoice.total || 0;
-            }
-        });
-        
-        return {
-            totalRevenue,
-            pendingAmount,
-            overdueAmount,
-            totalClients: clients.length
-        };
-    }
-
-    animateNumber(element, targetValue, prefix = '') {
-        const startValue = 0;
-        const duration = 1500;
-        const startTime = Date.now();
-        
-        const animate = () => {
-            const elapsed = Date.now() - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            
-            // Easing function (ease-out)
-            const easeOut = 1 - Math.pow(1 - progress, 3);
-            const currentValue = Math.floor(startValue + (targetValue - startValue) * easeOut);
-            
-            element.textContent = prefix + currentValue.toLocaleString();
-            
-            if (progress < 1) {
-                requestAnimationFrame(animate);
-            }
-        };
-        
-        animate();
-    }
-
-    updateRecentActivity() {
-        const recentActivityEl = document.getElementById('recent-activity');
-        if (!recentActivityEl) return;
-        
-        const activities = this.generateRecentActivities();
-        
-        recentActivityEl.innerHTML = activities.map(activity => `
-            <div class="flex items-center p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                <div class="w-10 h-10 rounded-full ${activity.bgColor} flex items-center justify-center mr-3">
-                    <i class="${activity.icon} ${activity.textColor}"></i>
-                </div>
-                <div class="flex-1">
-                    <p class="text-sm font-medium text-gray-900">${activity.title}</p>
-                    <p class="text-xs text-gray-500">${activity.time}</p>
-                </div>
-                <div class="text-xs text-gray-400">${activity.amount}</div>
+    <div class="main-grid">
+        <!-- ==== 1. Sidebar Navigation ==== -->
+        <aside class="bg-slate-800 text-slate-300 flex flex-col">
+            <div class="h-16 flex items-center px-6 bg-slate-900/50">
+                <i class="fa-solid fa-rocket text-3xl text-indigo-500"></i>
+                <span class="ml-3 text-lg font-extrabold text-white">InvoiceGen</span>
             </div>
-        `).join('');
-    }
+            <nav class="flex-1 px-4 py-4 space-y-2">
+                <a href="#" class="flex items-center px-4 py-2.5 text-white bg-slate-700/80 rounded-lg font-semibold">
+                    <i class="fa-solid fa-chart-pie w-6 h-6 text-indigo-400"></i><span class="ml-3">Dashboard</span>
+                </a>
+                <a href="#" class="flex items-center px-4 py-2.5 hover:bg-slate-700/50 rounded-lg"><i class="fa-solid fa-file-invoice w-6 h-6"></i><span class="ml-3">Invoices</span></a>
+                <a href="#" class="flex items-center px-4 py-2.5 hover:bg-slate-700/50 rounded-lg"><i class="fa-solid fa-users w-6 h-6"></i><span class="ml-3">Clients</span></a>
+                <a href="#" class="flex items-center px-4 py-2.5 hover:bg-slate-700/50 rounded-lg"><i class="fa-solid fa-chart-line w-6 h-6"></i><span class="ml-3">Reports</span></a>
+                <a href="#" class="flex items-center px-4 py-2.5 hover:bg-slate-700/50 rounded-lg"><i class="fa-solid fa-gear w-6 h-6"></i><span class="ml-3">Settings</span></a>
+            </nav>
+            <div class="px-4 py-4 border-t border-slate-700">
+                 <a href="#" class="flex items-center w-full p-2 rounded-lg hover:bg-slate-700">
+                    <img src="https://i.pravatar.cc/40?u=a042581f4e29026704d" alt="User Avatar" class="w-10 h-10 rounded-full">
+                    <div class="ml-3"><p class="text-sm font-semibold text-white">Alex Hartman</p><p class="text-xs text-slate-400">View Profile</p></div>
+                 </a>
+            </div>
+        </aside>
 
-    generateRecentActivities() {
-        return [
-            {
-                title: 'Invoice #INV-004 created',
-                icon: 'fas fa-file-invoice',
-                bgColor: 'bg-blue-100',
-                textColor: 'text-blue-600',
-                time: '2 minutes ago',
-                amount: '$1,250.00'
-            },
-            {
-                title: 'Payment received from Acme Corp',
-                icon: 'fas fa-dollar-sign',
-                bgColor: 'bg-green-100',
-                textColor: 'text-green-600',
-                time: '15 minutes ago',
-                amount: '$2,750.00'
-            },
-            {
-                title: 'New client Tech Solutions added',
-                icon: 'fas fa-user-plus',
-                bgColor: 'bg-purple-100',
-                textColor: 'text-purple-600',
-                time: '1 hour ago',
-                amount: ''
-            },
-            {
-                title: 'Invoice #INV-002 marked as overdue',
-                icon: 'fas fa-exclamation-triangle',
-                bgColor: 'bg-red-100',
-                textColor: 'text-red-600',
-                time: '2 hours ago',
-                amount: '$1,980.00'
-            }
-        ];
-    }
-
-    updateNotifications() {
-        const notificationsEl = document.getElementById('notifications-list');
-        if (!notificationsEl) return;
-        
-        const notifications = this.generateNotifications();
-        
-        notificationsEl.innerHTML = notifications.map(notification => `
-            <div class="p-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors">
-                <div class="flex items-start">
-                    <div class="w-2 h-2 rounded-full ${notification.unread ? 'bg-blue-500' : 'bg-gray-300'} mt-2 mr-3"></div>
-                    <div class="flex-1">
-                        <p class="text-sm font-medium text-gray-900">${notification.title}</p>
-                        <p class="text-xs text-gray-500 mt-1">${notification.message}</p>
-                        <p class="text-xs text-gray-400 mt-1">${notification.time}</p>
+        <!-- ==== 2. Main Content Area ==== -->
+        <main class="overflow-y-auto px-10 py-8">
+            <!-- Header -->
+            <header class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-900">Command Centre</h1>
+                    <p class="text-slate-500 mt-1">Your business financial overview.</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" placeholder="Search anything..." class="w-64 pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
                 </div>
+            </header>
+
+            <!-- Stat Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-xl border border-slate-200/80 shadow-sm"><div class="flex items-start justify-between"><div class="text-sm font-medium text-slate-500">Total Outstanding</div><i class="fa-solid fa-hourglass-half text-orange-400"></i></div><p id="stat-outstanding" class="text-3xl font-bold mt-2">$0.00</p><p class="text-xs text-slate-400 mt-1">Across 6 invoices</p></div>
+                <div class="bg-white p-6 rounded-xl border border-slate-200/80 shadow-sm"><div class="flex items-start justify-between"><div class="text-sm font-medium text-slate-500">Total Overdue</div><i class="fa-solid fa-triangle-exclamation text-red-500"></i></div><p id="stat-overdue" class="text-3xl font-bold mt-2">$0.00</p><p class="text-xs text-slate-400 mt-1">Across 2 invoices</p></div>
+                <div class="bg-white p-6 rounded-xl border border-slate-200/80 shadow-sm"><div class="flex items-start justify-between"><div class="text-sm font-medium text-slate-500">Revenue (30d)</div><i class="fa-solid fa-circle-check text-green-500"></i></div><p id="stat-revenue" class="text-3xl font-bold mt-2">$0.00</p><p class="text-xs text-green-500 font-semibold mt-1 flex items-center"><i class="fa-solid fa-arrow-up text-xs mr-1"></i> 12.5% vs last month</p></div>
+                <div class="bg-white p-6 rounded-xl border border-slate-200/80 shadow-sm"><div class="flex items-start justify-between"><div class="text-sm font-medium text-slate-500">Avg. Collection Time</div><i class="fa-solid fa-clock text-sky-500"></i></div><p id="stat-avg-collection" class="text-3xl font-bold mt-2">0 days</p><p class="text-xs text-slate-400 mt-1">From last 5 payments</p></div>
             </div>
-        `).join('');
-    }
 
-    generateNotifications() {
-        return [
-            {
-                title: 'Payment Reminder Sent',
-                message: 'Automatic reminder sent to Tech Solutions for invoice #INV-002',
-                time: '30 minutes ago',
-                unread: true
-            },
-            {
-                title: 'Subscription Renewal',
-                message: 'Your Starter plan will renew in 5 days',
-                time: '2 hours ago',
-                unread: true
-            },
-            {
-                title: 'New Feature Available',
-                message: 'Advanced reporting features are now available in your plan',
-                time: '1 day ago',
-                unread: false
+            <!-- Revenue Chart -->
+            <div id="revenue-chart-container" class="bg-white p-6 rounded-xl border border-slate-200/80 shadow-sm">
+                <!-- Chart or Empty State will be rendered here by JS -->
+            </div>
+        </main>
+
+        <!-- ==== 3. Action Panel ==== -->
+        <aside class="bg-white border-l border-slate-200/80 overflow-y-auto px-6 py-8">
+            <button class="w-full bg-indigo-600 text-white font-semibold py-3 rounded-lg shadow-sm hover:bg-indigo-700 transition-colors duration-200 flex items-center justify-center">
+                <i class="fa-solid fa-plus mr-2"></i> Create New Invoice
+            </button>
+            
+            <div class="mt-8">
+                <h2 class="text-lg font-bold text-slate-900 mb-4">Needs Attention</h2>
+                <div id="attention-list-container">
+                    <!-- List or Empty State will be rendered here by JS -->
+                </div>
+            </div>
+            
+             <div class="mt-8">
+                <h2 class="text-lg font-bold text-slate-900 mb-4">Recent Activity</h2>
+                <div id="activity-feed-container" class="space-y-4">
+                     <!-- List or Empty State will be rendered here by JS -->
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- HTML Templates for Empty States (hidden) -->
+    <template id="chart-empty-state">
+        <div class="flex flex-col items-center justify-center h-full min-h-[400px] text-center p-6"><div class="p-4 bg-slate-100 rounded-full mb-4"><i class="fa-solid fa-chart-line text-3xl text-slate-400"></i></div><h3 class="text-lg font-semibold text-slate-800">Your Revenue Chart Will Appear Here</h3><p class="text-slate-500 text-sm mt-1">Send invoices and record payments to see your financial trends.</p></div>
+    </template>
+    
+    <template id="attention-empty-state">
+        <div class="text-center p-6 border-2 border-dashed border-slate-200 rounded-lg"><div class="p-3 inline-block bg-green-100 rounded-full mb-3"><i class="fa-solid fa-shield-check text-2xl text-green-500"></i></div><h3 class="font-semibold text-slate-800">All Clear!</h3><p class="text-slate-500 text-sm mt-1">No invoices need your immediate attention. Great job!</p></div>
+    </template>
+
+    <template id="activity-empty-state">
+        <div class="text-center p-6 border-2 border-dashed border-slate-200 rounded-lg"><div class="p-3 inline-block bg-slate-100 rounded-full mb-3"><i class="fa-solid fa-bolt text-2xl text-slate-400"></i></div><h3 class="font-semibold text-slate-800">No Recent Activity</h3><p class="text-slate-500 text-sm mt-1">Actions you take in the app will be logged here.</p></div>
+    </template>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            const HAS_DATA = true;
+
+            const mockData = {
+                stats: { outstanding: 7820.50, overdue: 1980.00, revenue30d: 9145.00, avgCollection: 14 },
+                attentionInvoices: [
+                    { id: 'INV-005', client: 'Global Industries', amount: 1000.00, status: 'overdue', due: '12 days ago', color: 'red' },
+                    { id: 'INV-008', client: 'Innovate LLC', amount: 2500.00, status: 'pending', due: 'in 3 days', color: 'orange' },
+                    { id: 'INV-009', client: 'Quantum Tech', amount: 1550.00, status: 'pending', due: 'in 7 days', color: 'orange' },
+                ],
+                activityFeed: [
+                    { icon: 'fa-dollar-sign', color: 'green', title: 'Payment from Acme Corp', time: '15m ago', value: '+$2,750' },
+                    { icon: 'fa-file-invoice', color: 'blue', title: 'Invoice sent to Startup Co.', time: '45m ago', value: '$1,250' },
+                    { icon: 'fa-user-plus', color: 'indigo', title: 'New client "Innovate LLC" added', time: '2h ago', value: '' },
+                ],
+                revenue: {
+                    paid: [12500, 15800, 13200, 18900, 16700, 21400],
+                    outstanding: [3200, 4100, 3800, 5200, 4600, 5800],
+                    labels: ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep']
+                }
+            };
+
+            function animateNumber(element, target, prefix = '$', suffix = '', decimals = 2) {
+                if(!element) return;
+                const DURATION = 1500;
+                const start = 0;
+                let startTime = null;
+                const formatValue = (value) => {
+                    const v = decimals === 0 ? Math.round(value) : value.toFixed(decimals);
+                    return prefix + parseFloat(v).toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) + suffix;
+                };
+                const step = (timestamp) => {
+                    if (!startTime) startTime = timestamp;
+                    const progress = Math.min((timestamp - startTime) / DURATION, 1);
+                    const eased = 1 - Math.pow(1 - progress, 3);
+                    element.innerHTML = formatValue(eased * target);
+                    if (progress < 1) window.requestAnimationFrame(step);
+                };
+                window.requestAnimationFrame(step);
             }
-        ];
-    }
 
-    startAutoRefresh() {
-        this.log('🔄 Starting auto-refresh');
-        this.refreshInterval = setInterval(() => {
-            this.refreshDashboard();
-        }, this.updateFrequency);
-    }
-
-    stopAutoRefresh() {
-        this.log('⏹️ Stopping auto-refresh');
-        if (this.refreshInterval) {
-            clearInterval(this.refreshInterval);
-            this.refreshInterval = null;
-        }
-    }
-
-    refreshDashboard() {
-        this.log('🔄 Refreshing dashboard data');
-        this.loadDashboardData();
-        this.updateCharts();
-    }
-
-    updateCharts() {
-        Object.values(this.charts).forEach(chart => {
-            if (chart && typeof chart.resize === 'function') {
-                chart.resize();
+            function renderStats() {
+                if (HAS_DATA) {
+                    animateNumber(document.getElementById('stat-outstanding'), mockData.stats.outstanding);
+                    animateNumber(document.getElementById('stat-overdue'), mockData.stats.overdue);
+                    animateNumber(document.getElementById('stat-revenue'), mockData.stats.revenue30d);
+                    animateNumber(document.getElementById('stat-avg-collection'), mockData.stats.avgCollection, '', ' days', 0);
+                }
             }
-        });
-    }
 
-    switchChartType(chartType) {
-        this.log('📈 Switching chart type', { chartType });
-        // Implementation for switching chart types
-        // This would update the revenue chart to show different visualizations
-    }
-
-    updateChartsForPeriod(period) {
-        this.log('📅 Updating charts for period', { period });
-        // Implementation for updating charts based on selected time period
-        // This would filter and update all chart data
-    }
-
-    initializeAnimations() {
-        // Animate dashboard elements on load
-        anime({
-            targets: '.stat-card',
-            translateY: [20, 0],
-            opacity: [0, 1],
-            delay: anime.stagger(100),
-            duration: 600,
-            easing: 'easeOutQuad'
-        });
-
-        anime({
-            targets: '.chart-container',
-            scale: [0.95, 1],
-            opacity: [0, 1],
-            delay: anime.stagger(200, {start: 300}),
-            duration: 800,
-            easing: 'easeOutQuad'
-        });
-
-        anime({
-            targets: '.activity-item',
-            translateX: [-20, 0],
-            opacity: [0, 1],
-            delay: anime.stagger(50, {start: 600}),
-            duration: 500,
-            easing: 'easeOutQuad'
-        });
-    }
-
-    // Cleanup method
-    destroy() {
-        this.stopAutoRefresh();
-        Object.values(this.charts).forEach(chart => {
-            if (chart && typeof chart.dispose === 'function') {
-                chart.dispose();
+            function renderRevenueChart() {
+                const container = document.getElementById('revenue-chart-container');
+                if (!HAS_DATA) {
+                    container.innerHTML = document.getElementById('chart-empty-state').innerHTML;
+                    return;
+                }
+                
+                container.innerHTML = `<div class="flex justify-between items-center mb-4"><h2 class="text-lg font-bold text-slate-900">Financial Snapshot</h2><select class="border-slate-200 rounded-md text-sm shadow-sm"><option>Last 6 Months</option></select></div><div id="apex-revenue-chart"></div>`;
+                
+                const options = {
+                    series: [
+                        { name: 'Paid Revenue', type: 'column', data: mockData.revenue.paid },
+                        { name: 'Outstanding', type: 'line', data: mockData.revenue.outstanding }
+                    ],
+                    chart: { height: 400, type: 'line', toolbar: { show: false } },
+                    stroke: { width: [0, 3], curve: 'smooth' },
+                    colors: ['#4f46e5', '#f59e0b'],
+                    dataLabels: { enabled: false },
+                    xaxis: { categories: mockData.revenue.labels, axisBorder: { show: false }, axisTicks: { show: false } },
+                    yaxis: { title: { text: 'Amount ($)' } },
+                    grid: { borderColor: '#f1f5f9', strokeDashArray: 4 },
+                    tooltip: { shared: true, intersect: false, y: { formatter: (y) => y ? `$${y.toLocaleString()}` : y } }
+                };
+                new ApexCharts(document.querySelector("#apex-revenue-chart"), options).render();
             }
+
+            function renderActionableInvoices() {
+                const container = document.getElementById('attention-list-container');
+                if (!HAS_DATA || mockData.attentionInvoices.length === 0) {
+                    container.innerHTML = document.getElementById('attention-empty-state').innerHTML;
+                    return;
+                }
+                
+                const listHTML = mockData.attentionInvoices.map(inv => `
+                    <div class="p-3 bg-slate-50/80 hover:bg-slate-100 rounded-lg flex items-center justify-between">
+                        <div>
+                            <p class="font-semibold text-sm">${inv.id} - ${inv.client}</p>
+                            <div class="flex items-center text-xs text-slate-500 mt-1">
+                                <span class="w-2 h-2 rounded-full bg-${inv.color}-500 mr-2"></span>
+                                ${inv.status.charAt(0).toUpperCase() + inv.status.slice(1)} - Due ${inv.due}
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-sm text-slate-800">$${inv.amount.toFixed(2)}</p>
+                            <a href="#" class="text-xs text-indigo-600 font-semibold hover:underline">View</a>
+                        </div>
+                    </div>`).join('');
+                container.innerHTML = `<div class="space-y-3">${listHTML}</div>`;
+            }
+
+            function renderActivityFeed() {
+                const container = document.getElementById('activity-feed-container');
+                 if (!HAS_DATA || mockData.activityFeed.length === 0) {
+                    container.innerHTML = document.getElementById('activity-empty-state').innerHTML;
+                    return;
+                }
+
+                const feedHTML = mockData.activityFeed.map(item => `
+                    <div class="flex items-start">
+                        <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center mr-3 flex-shrink-0 mt-1">
+                            <i class="fa-solid ${item.icon} text-${item.color}-500"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-slate-700">${item.title} <span class="font-semibold text-slate-900">${item.value}</span></p>
+                            <p class="text-xs text-slate-400">${item.time}</p>
+                        </div>
+                    </div>`).join('');
+                container.innerHTML = `<div class="space-y-4">${feedHTML}</div>`;
+            }
+
+            // Initial render
+            renderStats();
+            renderRevenueChart();
+            renderActionableInvoices();
+            renderActivityFeed();
         });
-        this.charts = {};
-    }
-}
-
-// Initialize enhanced dashboard when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    // Wait for auth service and other dependencies
-    setTimeout(() => {
-        window.enhancedDashboard = new EnhancedDashboard();
-    }, 100);
-});
-
-// Handle window resize for charts
-window.addEventListener('resize', function() {
-    if (window.enhancedDashboard) {
-        window.enhancedDashboard.updateCharts();
-    }
-});
-
-// Cleanup on page unload
-window.addEventListener('beforeunload', function() {
-    if (window.enhancedDashboard) {
-        window.enhancedDashboard.destroy();
-    }
-});
+    </script>
+</body>
+</html>
