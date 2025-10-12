@@ -1,3 +1,4 @@
+```html
 <!doctype html>
 <html lang="en">
 <head>
@@ -5,231 +6,515 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Create Invoice — InvoicePro</title>
 
+  <!-- Tailwind CDN (keeps styling consistent with dashboard) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Inter', sans-serif; }
-    .added-items-border {
-      border-top: 2px dashed #e5e7eb;
-      margin-top: 1rem;
-      padding-top: 1rem;
-    }
-  </style>
+  <style> body { font-family: 'Inter', sans-serif; } </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
-<div class="flex min-h-screen">
+  <div class="flex min-h-screen">
 
-  <!-- Sidebar -->
-  <aside class="w-64 bg-white shadow-md hidden md:flex flex-col">
-    <div class="px-6 py-4 border-b">
-      <h1 class="text-xl font-bold text-indigo-600">Invoice<span class="text-gray-900">Pro</span></h1>
-    </div>
-    <nav class="flex-1 px-4 py-6 space-y-2">
-      <a href="dashboard.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">🏠 Dashboard</a>
-      <a href="create-invoice.html" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-indigo-50 text-indigo-700 font-semibold">🧾 Create Invoice</a>
-      <a href="invoices.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">💼 Invoices</a>
-      <a href="clients.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">👤 Clients</a>
-      <a href="reports.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">📊 Reports</a>
-      <a href="settings.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">⚙️ Settings</a>
-    </nav>
-    <div class="p-4 border-t">
-      <button class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition">Logout</button>
-    </div>
-  </aside>
-
-  <!-- Main -->
-  <main class="flex-1 flex flex-col">
-
-    <!-- Topbar -->
-    <header class="flex items-center justify-between bg-white shadow px-6 py-4 sticky top-0 z-10">
-      <h2 class="text-2xl font-semibold">Create Invoice</h2>
-      <div class="flex items-center gap-4">
-        <input id="globalSearch" type="text" placeholder="Search..." class="px-3 py-2 border rounded-lg focus:ring focus:ring-indigo-200" />
-        <div class="w-10 h-10 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-800 font-bold">R</div>
+    <!-- Sidebar (same look as dashboard) -->
+    <aside class="w-64 bg-white shadow-md hidden md:flex flex-col">
+      <div class="px-6 py-4 border-b">
+        <h1 class="text-xl font-bold text-indigo-600">Invoice<span class="text-gray-900">Pro</span></h1>
       </div>
-    </header>
+      <nav class="flex-1 px-4 py-6 space-y-2">
+        <a href="dashboard.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">🏠 Dashboard</a>
+        <a href="create-invoice.html" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-indigo-50 text-indigo-700 font-semibold">🧾 Create Invoice</a>
+        <a href="clients.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">👤 Clients</a>
+        <a href="settings.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">⚙️ Settings</a>
+      </nav>
+      <div class="p-4 border-t">
+        <button class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition">Logout</button>
+      </div>
+    </aside>
 
-    <!-- Content grid -->
-    <section class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main -->
+    <main class="flex-1 flex flex-col">
 
-      <!-- Left: Form -->
-      <div class="lg:col-span-2 space-y-6">
+      <!-- Topbar -->
+      <header class="flex items-center justify-between bg-white shadow px-6 py-4 sticky top-0 z-10">
+        <h2 class="text-2xl font-semibold">Create Invoice</h2>
+        <div class="flex items-center gap-4">
+          <input id="globalSearch" type="text" placeholder="Search..." class="px-3 py-2 border rounded-lg focus:ring focus:ring-indigo-200" />
+          <div class="w-10 h-10 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-800 font-bold">R</div>
+        </div>
+      </header>
 
-        <!-- Invoice Details -->
-        <div class="bg-white rounded-2xl shadow p-6">
-          <div class="flex items-start justify-between">
-            <h3 class="text-lg font-semibold">Invoice Details</h3>
-            <div class="space-x-2">
-              <button id="saveDraftBtn" class="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">Save Draft</button>
-              <button id="sendBtn" class="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">Send</button>
-            </div>
-          </div>
+      <!-- Content grid -->
+      <section class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            <div>
-              <label class="text-sm font-medium text-gray-600">Client</label>
-              <select id="clientSelect" class="mt-1 w-full border rounded-lg px-3 py-2"></select>
-              <div class="mt-2 flex gap-2">
-                <input id="clientSearch" type="text" placeholder="Search / Add client..." class="flex-1 border rounded-lg px-3 py-2" />
-                <button id="addClientBtn" class="px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">+ Client</button>
+        <!-- Left: Form (2/3) -->
+        <div class="lg:col-span-2 space-y-6">
+
+          <!-- Invoice Details -->
+          <div class="bg-white rounded-2xl shadow p-6">
+            <div class="flex items-start justify-between">
+              <h3 class="text-lg font-semibold">Invoice Details</h3>
+              <div class="space-x-2">
+                <!-- Export/Save buttons call existing functions if present -->
+                <button id="saveDraftBtn" class="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">Save Draft</button>
+                <button id="sendBtn" class="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">Send</button>
               </div>
             </div>
 
-            <div>
-              <label class="text-sm font-medium text-gray-600">Invoice #</label>
-              <input id="invoiceNumber" type="text" class="mt-1 w-full border rounded-lg px-3 py-2" placeholder="#INV-0001" />
-            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <div>
+                <label class="text-sm font-medium text-gray-600">Client</label>
+                <!-- If your code populates a client select, it should target #clientSelect -->
+                <select id="clientSelect" class="mt-1 w-full border rounded-lg px-3 py-2"></select>
+                <div class="mt-2 flex gap-2">
+                  <input id="clientSearch" type="text" placeholder="Search / Add client..." class="flex-1 border rounded-lg px-3 py-2" />
+                  <button id="addClientBtn" class="px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">+ Client</button>
+                </div>
+              </div>
 
-            <div>
-              <label class="text-sm font-medium text-gray-600">Invoice Date</label>
-              <input id="invoiceDate" type="date" class="mt-1 w-full border rounded-lg px-3 py-2" />
-            </div>
+              <div>
+                <label class="text-sm font-medium text-gray-600">Invoice #</label>
+                <input id="invoiceNumber" type="text" class="mt-1 w-full border rounded-lg px-3 py-2" placeholder="#INV-0001" />
+              </div>
 
-            <div>
-              <label class="text-sm font-medium text-gray-600">Due Date</label>
-              <input id="dueDate" type="date" class="mt-1 w-full border rounded-lg px-3 py-2" />
+              <div>
+                <label class="text-sm font-medium text-gray-600">Invoice Date</label>
+                <input id="invoiceDate" type="date" class="mt-1 w-full border rounded-lg px-3 py-2" />
+              </div>
+
+              <div>
+                <label class="text-sm font-medium text-gray-600">Due Date</label>
+                <input id="dueDate" type="date" class="mt-1 w-full border rounded-lg px-3 py-2" />
+              </div>
             </div>
           </div>
+
+          <!-- Line Items -->
+          <div class="bg-white rounded-2xl shadow p-6">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-semibold">Items</h3>
+              <div class="text-sm text-gray-500">Tip: press <kbd class="bg-gray-100 px-2 rounded">Tab</kbd> to quickly move across fields</div>
+            </div>
+
+            <div class="overflow-x-auto mt-4">
+              <table id="itemsTable" class="min-w-full text-sm">
+                <thead class="bg-gray-100 text-gray-700">
+                  <tr>
+                    <th class="px-4 py-2 text-left">Description</th>
+                    <th class="px-4 py-2 w-20 text-left">Qty</th>
+                    <th class="px-4 py-2 w-32 text-left">Unit</th>
+                    <th class="px-4 py-2 w-32 text-left">Price</th>
+                    <th class="px-4 py-2 w-32 text-left">Line Total</th>
+                    <th class="px-4 py-2 w-12"></th>
+                  </tr>
+                </thead>
+                <tbody id="itemRows" class="divide-y">
+                  <!-- Fixed input row -->
+                  <tr class="item-input-row">
+                    <td class="px-3 py-2">
+                      <input class="desc w-full border rounded px-2 py-1" placeholder="Item description" />
+                    </td>
+                    <td class="px-3 py-2">
+                      <input type="number" class="qty w-full border rounded px-2 py-1" value="1" min="0" />
+                    </td>
+                    <td class="px-3 py-2">
+                      <input class="unit w-full border rounded px-2 py-1" placeholder="pcs / hr" />
+                    </td>
+                    <td class="px-3 py-2">
+                      <input type="number" class="price w-full border rounded px-2 py-1" value="0" min="0" step="0.01" />
+                    </td>
+                    <td class="px-3 py-2 text-gray-700 total-preview">$0.00</td>
+                    <td class="px-3 py-2 text-center">
+                      <!-- No remove button for input row -->
+                    </td>
+                  </tr>
+                  <!-- Add button row -->
+                  <tr class="add-button-row">
+                    <td colspan="6" class="px-3 py-2 text-center bg-gray-50">
+                      <button id="addItemBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">+ Add Item</button>
+                      <div id="presetsContainer" class="flex gap-2 mt-2 inline-block"></div>
+                    </td>
+                  </tr>
+                  <!-- Dynamic item rows will be inserted here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Notes + Totals -->
+          <div class="bg-white rounded-2xl shadow p-6 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+            <div class="w-full md:w-1/2">
+              <label class="text-sm font-medium text-gray-600">Notes / Terms</label>
+              <textarea id="notes" rows="4" class="mt-1 w-full border rounded-lg px-3 py-2" placeholder="Notes visible on PDF"></textarea>
+            </div>
+
+            <div class="w-full md:w-1/3 space-y-2">
+              <div class="flex justify-between text-sm text-gray-700">
+                <span>Subtotal</span>
+                <span id="subtotal">$0.00</span>
+              </div>
+              <div class="flex justify-between text-sm text-gray-700">
+                <span>Discount</span>
+                <span id="discount">$0.00</span>
+              </div>
+              <div class="flex justify-between text-sm text-gray-700">
+                <span>Tax</span>
+                <span id="tax">$0.00</span>
+              </div>
+              <div class="flex justify-between text-lg font-semibold text-gray-900 border-t pt-2">
+                <span>Total</span>
+                <span id="grandTotal">$0.00</span>
+              </div>
+              <div class="flex gap-2 mt-3">
+                <button id="previewPdfBtn" class="w-full px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">Preview PDF</button>
+                <button id="downloadBtn" class="w-full px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">Download</button>
+              </div>
+            </div>
+          </div>
+
         </div>
 
-        <!-- Items Section -->
-        <div class="bg-white rounded-2xl shadow p-6">
+        <!-- Right: Live preview & actions (1/3) -->
+        <aside class="bg-white rounded-2xl shadow p-6">
           <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold">Items</h3>
-            <div class="text-sm text-gray-500">Tip: press <kbd class="bg-gray-100 px-2 rounded">Tab</kbd> to move quickly</div>
+            <h3 class="text-lg font-semibold">Invoice Preview</h3>
+            <div class="text-xs text-gray-500">Live</div>
           </div>
 
-          <div class="mt-4 flex items-center gap-3">
-            <button id="addItemBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">+ Add Item</button>
-            <div id="presetsContainer" class="flex gap-2"></div>
-          </div>
+          <div id="previewCard" class="mt-4 border rounded-lg p-4 bg-gray-50 h-[72vh] overflow-auto">
+            <div class="mb-4">
+              <div class="flex justify-between">
+                <div>
+                  <h4 class="font-bold text-lg" id="pvCompanyName">Your Company</h4>
+                  <div id="pvCompanyAddress" class="text-sm text-gray-600">123 Street, City</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm text-gray-500">Invoice</div>
+                  <div id="pvNumber" class="font-semibold">—</div>
+                </div>
+              </div>
 
-          <div id="addedItemsContainer" class="added-items-border mt-4">
-            <table id="itemsTable" class="min-w-full text-sm">
-              <thead class="bg-gray-100 text-gray-700">
+              <div class="mt-4 grid grid-cols-2 gap-2 text-sm text-gray-700">
+                <div>
+                  <div class="text-xs text-gray-500">Bill To</div>
+                  <div id="pvClient">—</div>
+                </div>
+                <div>
+                  <div class="text-xs text-gray-500">Dates</div>
+                  <div id="pvDate">—</div>
+                  <div id="pvDue" class="text-xs text-gray-500">—</div>
+                </div>
+              </div>
+            </div>
+
+            <table class="w-full text-sm border-collapse">
+              <thead class="bg-gray-100">
                 <tr>
-                  <th class="px-4 py-2 text-left">Description</th>
-                  <th class="px-4 py-2 w-20 text-left">Qty</th>
-                  <th class="px-4 py-2 w-32 text-left">Unit</th>
-                  <th class="px-4 py-2 w-32 text-left">Price</th>
-                  <th class="px-4 py-2 w-32 text-left">Line Total</th>
-                  <th class="px-4 py-2 w-12"></th>
+                  <th class="px-2 py-1 text-left">Description</th>
+                  <th class="px-2 py-1">Qty</th>
+                  <th class="px-2 py-1">Unit</th>
+                  <th class="px-2 py-1">Price</th>
+                  <th class="px-2 py-1">Total</th>
                 </tr>
               </thead>
-              <tbody id="itemRows" class="divide-y">
-                <tr class="item-row">
-                  <td class="px-3 py-2"><input class="desc w-full border rounded px-3 py-2" placeholder="Item description" /></td>
-                  <td class="px-3 py-2"><input type="number" class="qty w-full border rounded px-3 py-2" value="1" min="0" /></td>
-                  <td class="px-3 py-2"><input class="unit w-full border rounded px-3 py-2" placeholder="pcs / hr" /></td>
-                  <td class="px-3 py-2"><input type="number" class="price w-full border rounded px-3 py-2" value="0" min="0" step="0.01" /></td>
-                  <td class="px-3 py-2 text-gray-700 total">$0.00</td>
-                  <td class="px-3 py-2 text-center"><button class="removeRow text-red-500 hover:text-red-700">✖</button></td>
-                </tr>
-              </tbody>
+              <tbody id="pvItems"></tbody>
             </table>
-          </div>
-        </div>
 
-        <!-- Notes & Totals -->
-        <div class="bg-white rounded-2xl shadow p-6 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-          <div class="w-full md:w-1/2">
-            <label class="text-sm font-medium text-gray-600">Notes / Terms</label>
-            <textarea id="notes" rows="4" class="mt-1 w-full border rounded-lg px-3 py-2" placeholder="Notes visible on PDF"></textarea>
-          </div>
-
-          <div class="w-full md:w-1/3 space-y-2">
-            <div class="flex justify-between text-sm text-gray-700"><span>Subtotal</span><span id="subtotal">$0.00</span></div>
-            <div class="flex justify-between text-sm text-gray-700"><span>Discount</span><span id="discount">$0.00</span></div>
-            <div class="flex justify-between text-sm text-gray-700"><span>Tax</span><span id="tax">$0.00</span></div>
-            <div class="flex justify-between text-lg font-semibold text-gray-900 border-t pt-2"><span>Total</span><span id="grandTotal">$0.00</span></div>
-
-            <div class="flex gap-2 mt-3">
-              <button id="previewPdfBtn" class="w-full px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">Preview PDF</button>
-              <button id="downloadBtn" class="w-full px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">Download</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right: Preview -->
-      <aside class="bg-white rounded-2xl shadow p-6">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-semibold">Invoice Preview</h3>
-          <div class="text-xs text-gray-500">Live</div>
-        </div>
-
-        <div id="previewCard" class="mt-4 border rounded-lg p-4 bg-gray-50 h-[72vh] overflow-auto">
-          <div class="mb-4">
-            <div class="flex justify-between">
-              <div>
-                <h4 class="font-bold text-lg" id="pvCompanyName">Your Company</h4>
-                <div id="pvCompanyAddress" class="text-sm text-gray-600">123 Street, City</div>
-              </div>
-              <div class="text-right">
-                <div class="text-sm text-gray-500">Invoice</div>
-                <div id="pvNumber" class="font-semibold">—</div>
-              </div>
+            <div class="mt-4 space-y-1 text-sm">
+              <div class="flex justify-between"><span>Subtotal</span><span id="pvSubtotal">$0.00</span></div>
+              <div class="flex justify-between"><span>Tax</span><span id="pvTax">$0.00</span></div>
+              <div class="flex justify-between font-semibold text-lg"><span>Total</span><span id="pvTotal">$0.00</span></div>
             </div>
 
-            <div class="mt-4 grid grid-cols-2 gap-2 text-sm text-gray-700">
-              <div><div class="text-xs text-gray-500">Bill To</div><div id="pvClient">—</div></div>
-              <div><div class="text-xs text-gray-500">Dates</div><div id="pvDate">—</div><div id="pvDue" class="text-xs text-gray-500">—</div></div>
+            <div class="mt-4 text-sm text-gray-600">
+              <strong>Notes</strong>
+              <div id="pvNotes">—</div>
             </div>
+
           </div>
 
-          <table class="w-full text-sm border-collapse">
-            <thead class="bg-gray-100">
-              <tr>
-                <th class="px-2 py-1 text-left">Description</th>
-                <th class="px-2 py-1">Qty</th>
-                <th class="px-2 py-1">Unit</th>
-                <th class="px-2 py-1">Price</th>
-                <th class="px-2 py-1">Total</th>
-              </tr>
-            </thead>
-            <tbody id="pvItems"></tbody>
-          </table>
-
-          <div class="mt-4 space-y-1 text-sm">
-            <div class="flex justify-between"><span>Subtotal</span><span id="pvSubtotal">$0.00</span></div>
-            <div class="flex justify-between"><span>Tax</span><span id="pvTax">$0.00</span></div>
-            <div class="flex justify-between font-semibold text-lg"><span>Total</span><span id="pvTotal">$0.00</span></div>
+          <!-- Quick actions for integration; existing functions can be invoked by binding to these buttons -->
+          <div class="mt-4 grid grid-cols-1 gap-2">
+            <button id="btnSendEmail" class="px-3 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">Send via Email</button>
+            <button id="btnMarkPaid" class="px-3 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">Mark as Paid</button>
+            <button id="btnDuplicate" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">Duplicate</button>
           </div>
+        </aside>
 
-          <div class="mt-4 text-sm text-gray-600">
-            <strong>Notes</strong>
-            <div id="pvNotes">—</div>
-          </div>
-        </div>
-      </aside>
-    </section>
-  </main>
-</div>
+      </section>
+    </main>
+  </div>
 
-<!-- PDF Preview Fix -->
-<script>
-  document.getElementById('previewPdfBtn').addEventListener('click', () => {
-    const preview = document.getElementById('previewCard').innerHTML;
-    const win = window.open('', '_blank');
-    win.document.write(`
-      <html>
-        <head>
-          <title>Invoice Preview</title>
-          <style>
-            body { font-family: 'Inter', sans-serif; padding: 20px; color: #111; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background: #f3f4f6; }
-          </style>
-        </head>
-        <body>${preview}</body>
-      </html>
-    `);
-    win.document.close();
-    win.print();
-  });
-</script>
+  <!-- ============================
+       Hook your existing repo JS files here.
+       Example: if your repo uses `assets/js/invoice.js` or `scripts/main.js`,
+       include them below (order matters: core app scripts first, page-specific after).
+       Replace /assets/... with the correct relative paths in your repo.
+  ============================ -->
+  <!-- Example placeholders (UNCOMMENT & update paths to match your repo) -->
+  <!-- <script src="assets/js/core.js"></script> -->
+  <!-- <script src="assets/js/invoice.js"></script> -->
+  <!-- <script src="assets/js/clients.js"></script> -->
 
+  <!-- ============================
+       Safe fallback & compatibility layer
+       This small script will:
+         - provide local behavior if your existing functions are not present
+         - call your existing functions when they are defined
+       It is intentionally non-destructive.
+  ============================ -->
+  <script>
+    (function () {
+      // Utility helpers: try to call an existing function, otherwise noop
+      function tryCall(fnName, ...args) {
+        const fn = window[fnName];
+        if (typeof fn === 'function') {
+          try { return fn(...args); } catch (e) { console.error(fnName + ' error', e); }
+        }
+        return undefined;
+      }
+
+      // --- reference elements used by many invoice scripts ---
+      const itemRows = document.getElementById('itemRows');
+      const addItemBtn = document.getElementById('addItemBtn');
+      const subtotalEl = document.getElementById('subtotal');
+      const taxEl = document.getElementById('tax');
+      const discountEl = document.getElementById('discount') || { textContent: '$0.00' };
+      const grandTotalEl = document.getElementById('grandTotal');
+
+      // Default small implementations (used only if your repo does not provide them).
+      function fallbackAddItem(data = {}) {
+        const tr = document.createElement('tr');
+        tr.className = 'item-row';
+        tr.innerHTML = `
+          <td class="px-3 py-2"><input class="desc w-full border rounded px-2 py-1" value="${(data.desc||'')}" placeholder="Item description" /></td>
+          <td class="px-3 py-2"><input type="number" class="qty w-full border rounded px-2 py-1" value="${data.qty??1}" min="0" /></td>
+          <td class="px-3 py-2"><input class="unit w-full border rounded px-2 py-1" value="${(data.unit||'')}" placeholder="unit" /></td>
+          <td class="px-3 py-2"><input type="number" step="0.01" class="price w-full border rounded px-2 py-1" value="${data.price??0}" min="0" /></td>
+          <td class="px-3 py-2 text-gray-700 total">$0.00</td>
+          <td class="px-3 py-2 text-center"><button class="removeRow text-red-500 hover:text-red-700">✖</button></td>
+        `;
+        // Insert after add-button-row
+        const buttonRow = itemRows.querySelector('.add-button-row');
+        buttonRow.parentNode.insertBefore(tr, buttonRow.nextSibling);
+        attachRowListeners(tr);
+      }
+
+      function attachRowListeners(row) {
+        row.querySelectorAll('.qty, .price, .desc, .unit').forEach(el => {
+          el.addEventListener('input', () => {
+            // Update line total for this row
+            const qty = parseFloat(row.querySelector('.qty')?.value || 0);
+            const price = parseFloat(row.querySelector('.price')?.value || 0);
+            const line = qty * price;
+            const totalCell = row.querySelector('.total');
+            if (totalCell) totalCell.textContent = '$' + line.toFixed(2);
+
+            // if your repo has calculateTotals function use it, else run local
+            if (typeof window.calculateTotals === 'function') {
+              tryCall('calculateTotals');
+            } else {
+              localCalculateTotals();
+            }
+            // also refresh preview if your repo doesn't handle it
+            if (typeof window.refreshPreview !== 'function') refreshPreviewLocal();
+          });
+        });
+
+        row.querySelector('.removeRow')?.addEventListener('click', () => {
+          row.remove();
+          if (typeof window.calculateTotals === 'function') tryCall('calculateTotals');
+          else localCalculateTotals();
+          if (typeof window.refreshPreview !== 'function') refreshPreviewLocal();
+        });
+      }
+
+      // Function to update input row preview total
+      function updateInputPreview() {
+        const inputRow = document.querySelector('.item-input-row');
+        if (!inputRow) return;
+        const qty = parseFloat(inputRow.querySelector('.qty')?.value || 0);
+        const price = parseFloat(inputRow.querySelector('.price')?.value || 0);
+        const line = qty * price;
+        const previewCell = inputRow.querySelector('.total-preview');
+        if (previewCell) previewCell.textContent = '$' + line.toFixed(2);
+      }
+
+      // Local calculation & preview (fallback) - only sum item-row classes
+      function localCalculateTotals() {
+        let subtotal = 0;
+        document.querySelectorAll('#itemRows .item-row').forEach(row => {
+          const qty = parseFloat(row.querySelector('.qty')?.value || 0);
+          const price = parseFloat(row.querySelector('.price')?.value || 0);
+          const line = qty * price;
+          const totalCell = row.querySelector('.total');
+          if (totalCell) totalCell.textContent = '$' + line.toFixed(2);
+          subtotal += line;
+        });
+        const tax = subtotal * 0.10; // default 10% tax
+        const discount = 0;
+        subtotalEl.textContent = '$' + subtotal.toFixed(2);
+        taxEl.textContent = '$' + tax.toFixed(2);
+        if (discountEl) discountEl.textContent = '$' + discount.toFixed(2);
+        grandTotalEl.textContent = '$' + (subtotal + tax - discount).toFixed(2);
+        // update preview
+        refreshPreviewLocal();
+      }
+
+      function refreshPreviewLocal() {
+        // Basic preview mirroring — your functions may already do this
+        document.getElementById('pvClient').textContent = (document.getElementById('clientSelect')?.value || document.getElementById('clientSearch')?.value || '—');
+        document.getElementById('pvNumber').textContent = document.getElementById('invoiceNumber')?.value || '—';
+        document.getElementById('pvDate').textContent = document.getElementById('invoiceDate')?.value || '—';
+        document.getElementById('pvDue').textContent = document.getElementById('dueDate')?.value || '—';
+        document.getElementById('pvNotes').textContent = document.getElementById('notes')?.value || '—';
+        const pvItems = document.getElementById('pvItems');
+        pvItems.innerHTML = '';
+        let subtotal = 0;
+        document.querySelectorAll('#itemRows .item-row').forEach(row => {
+          const desc = (row.querySelector('.desc')?.value || '');
+          const qty = parseFloat(row.querySelector('.qty')?.value || 0);
+          const unit = row.querySelector('.unit')?.value || '';
+          const price = parseFloat(row.querySelector('.price')?.value || 0);
+          const line = qty * price;
+          subtotal += line;
+          const r = document.createElement('tr');
+          r.innerHTML = `<td class="px-2 py-1">${desc}</td><td class="px-2 py-1 text-center">${qty}</td><td class="px-2 py-1 text-center">${unit}</td><td class="px-2 py-1 text-right">$${price.toFixed(2)}</td><td class="px-2 py-1 text-right">$${line.toFixed(2)}</td>`;
+          pvItems.appendChild(r);
+        });
+        document.getElementById('pvSubtotal').textContent = '$' + subtotal.toFixed(2);
+        const tax = subtotal * 0.10;
+        document.getElementById('pvTax').textContent = '$' + tax.toFixed(2);
+        document.getElementById('pvTotal').textContent = '$' + (subtotal + tax).toFixed(2);
+      }
+
+      // On first load: let repo script populate clients if function exists, otherwise leave blank
+      window.addEventListener('DOMContentLoaded', () => {
+        // If the repo provides loadClients(), call it. Else fallback: create a default option.
+        if (typeof window.loadClients === 'function') {
+          tryCall('loadClients', document.getElementById('clientSelect'));
+        } else {
+          // fallback sample clients
+          const sel = document.getElementById('clientSelect');
+          sel.innerHTML = '<option value="">— Select client —</option><option>Acme Corp</option><option>Blue Ocean LLC</option>';
+        }
+
+        // If repo has initInvoicePage(), call it
+        if (typeof window.initInvoicePage === 'function') tryCall('initInvoicePage');
+
+        // Attach listeners to input row for preview update
+        const inputRow = document.querySelector('.item-input-row');
+        if (inputRow) {
+          inputRow.querySelectorAll('.qty, .price').forEach(el => {
+            el.addEventListener('input', () => {
+              updateInputPreview();
+            });
+          });
+        }
+
+        // Attach add item behavior: prefer repo-defined addItem() if present
+        addItemBtn.addEventListener('click', () => {
+          if (typeof window.addItem === 'function') {
+            tryCall('addItem'); // your repo implementation likely handles DOM
+          } else {
+            const descInput = document.querySelector('.item-input-row .desc');
+            const qtyInput = document.querySelector('.item-input-row .qty');
+            const unitInput = document.querySelector('.item-input-row .unit');
+            const priceInput = document.querySelector('.item-input-row .price');
+
+            const desc = descInput.value.trim();
+            const qty = parseFloat(qtyInput.value) || 1;
+            const unit = unitInput.value.trim();
+            const price = parseFloat(priceInput.value) || 0;
+
+            if (!desc) {
+              alert('Please enter a description.');
+              return;
+            }
+
+            const tr = document.createElement('tr');
+            tr.className = 'item-row';
+            const lineTotal = (qty * price).toFixed(2);
+            tr.innerHTML = `
+              <td class="px-1 py-2"><input class="desc w-full border rounded px-2 py-1" value="${desc}" placeholder="Item description" /></td>
+              <td class="px-1 py-2"><input type="number" class="qty w-full border rounded px-2 py-1" value="${qty}" min="0" /></td>
+              <td class="px-1 py-2"><input class="unit w-full border rounded px-2 py-1" value="${unit}" placeholder="unit" /></td>
+              <td class="px-1 py-2"><input type="number" step="0.01" class="price w-full border rounded px-2 py-1" value="${price}" min="0" /></td>
+              <td class="px-1 py-2 text-gray-700 total">$${lineTotal}</td>
+              <td class="px-1 py-2 text-center"><button class="removeRow text-red-500 hover:text-red-700">✖</button></td>
+            `;
+            // Insert after add-button-row
+            const buttonRow = itemRows.querySelector('.add-button-row');
+            buttonRow.parentNode.insertBefore(tr, buttonRow.nextSibling);
+            attachRowListeners(tr);
+
+            // Clear the input fields
+            descInput.value = '';
+            qtyInput.value = '1';
+            unitInput.value = '';
+            priceInput.value = '0';
+            updateInputPreview(); // Reset preview to $0.00
+
+            // Recalculate totals
+            if (typeof window.calculateTotals === 'function') tryCall('calculateTotals');
+            else localCalculateTotals();
+          }
+        });
+
+        // Attach various action buttons to repo functions if present, otherwise provide minimal behavior
+        document.getElementById('saveDraftBtn')?.addEventListener('click', () => {
+          if (typeof window.saveDraft === 'function') tryCall('saveDraft');
+          else alert('Save draft — implement saveDraft() in your scripts for full behavior.');
+        });
+
+        document.getElementById('sendBtn')?.addEventListener('click', () => {
+          if (typeof window.sendInvoice === 'function') tryCall('sendInvoice');
+          else { localCalculateTotals(); alert('Send invoice — implement sendInvoice() in your scripts for full behavior.'); }
+        });
+
+        document.getElementById('downloadBtn')?.addEventListener('click', () => {
+          if (typeof window.downloadInvoice === 'function') tryCall('downloadInvoice');
+          else alert('Download — implement downloadInvoice() in your scripts for full behavior.');
+        });
+
+        document.getElementById('previewPdfBtn')?.addEventListener('click', () => {
+          if (typeof window.previewPDF === 'function') tryCall('previewPDF');
+          else {
+            // simple browser print preview as fallback
+            window.print();
+          }
+        });
+
+        // quick action buttons on preview
+        document.getElementById('btnSendEmail')?.addEventListener('click', () => {
+          if (typeof window.sendInvoiceEmail === 'function') tryCall('sendInvoiceEmail');
+          else alert('Send email — implement sendInvoiceEmail() in your scripts.');
+        });
+        document.getElementById('btnMarkPaid')?.addEventListener('click', () => {
+          if (typeof window.markInvoicePaid === 'function') tryCall('markInvoicePaid');
+          else alert('Mark paid — implement markInvoicePaid() in your scripts.');
+        });
+        document.getElementById('btnDuplicate')?.addEventListener('click', () => {
+          if (typeof window.duplicateInvoice === 'function') tryCall('duplicateInvoice');
+          else alert('Duplicate — implement duplicateInvoice() in your scripts.');
+        });
+
+        // initial totals render: if your repo has calculateTotals(), call it, otherwise fallback
+        if (typeof window.calculateTotals === 'function') tryCall('calculateTotals');
+        else localCalculateTotals();
+
+        // If repo wants search input wiring, call its function if present
+        if (typeof window.attachSearch === 'function') tryCall('attachSearch', document.getElementById('globalSearch'));
+      });
+
+      // Expose a safe public API for your repo to call if it wants
+      window.invoicePageAPI = {
+        refreshPreview: function () { if (typeof window.refreshPreview === 'function') tryCall('refreshPreview'); else refreshPreviewLocal(); },
+        addItemFallback: fallbackAddItem,
+        calculateTotalsFallback: localCalculateTotals
+      };
+
+    })();
+  </script>
 </body>
 </html>
+```
