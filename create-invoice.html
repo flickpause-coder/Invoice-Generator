@@ -1,349 +1,235 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Invoice - InvoiceGen</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- NEW: Lexend Font for a modern, fancy look -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Create Invoice — InvoicePro</title>
 
-    <style>
-        body { font-family: 'Lexend', sans-serif; background-color: #f1f5f9; }
-        .main-layout { display: grid; grid-template-columns: 260px 1fr; height: 100vh; transition: grid-template-columns 0.3s ease; }
-        .main-layout.sidebar-collapsed { grid-template-columns: 80px 1fr; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #e2e8f0; }
-        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
-        .sidebar-text, #sidebar-user-info { transition: opacity 0.2s, width 0.2s, margin-left 0.2s; }
-        .sidebar-collapsed .sidebar-text, .sidebar-collapsed #sidebar-user-info { opacity: 0; width: 0; white-space: nowrap; margin-left: -1rem; pointer-events: none; }
-        #sidebar-toggle { opacity: 0; transition: opacity 0.2s; }
-        aside:hover #sidebar-toggle { opacity: 1; }
-        .gradient-text { background: linear-gradient(to right, #4338ca, #6d28d9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .btn-fancy {
-            background-image: linear-gradient(to right, #4f46e5, #7c3aed);
-            transition: all 0.3s ease;
-            background-size: 200% auto;
-        }
-        .btn-fancy:hover {
-            background-position: right center;
-            transform: scale(1.02);
-            box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.4);
-        }
-    </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .added-items-border {
+      border-top: 2px dashed #e5e7eb;
+      margin-top: 1rem;
+      padding-top: 1rem;
+    }
+  </style>
 </head>
-<body>
+<body class="bg-gray-50 text-gray-800">
 
-    <div id="main-layout" class="main-layout">
-        <!-- ==== Sidebar Navigation ==== -->
-        <aside class="bg-slate-800 text-slate-300 flex flex-col transition-all duration-300">
-            <div class="h-16 flex items-center px-6 bg-slate-900/50 flex-shrink-0">
-                <i class="fa-solid fa-rocket text-3xl text-indigo-500"></i>
-                <span class="ml-3 text-lg font-extrabold text-white sidebar-text">InvoiceGen</span>
-            </div>
-            <nav class="flex-1 px-4 py-4 space-y-2 overflow-y-auto overflow-x-hidden">
-                <a href="dashboard.html" class="flex items-center px-4 py-2.5 hover:bg-slate-700/50 rounded-lg"><i class="fa-solid fa-chart-pie w-6 h-6 flex-shrink-0"></i><span class="ml-3 sidebar-text">Dashboard</span></a>
-                <a href="invoices.html" class="flex items-center px-4 py-2.5 hover:bg-slate-700/50 rounded-lg"><i class="fa-solid fa-file-invoice w-6 h-6 flex-shrink-0"></i><span class="ml-3 sidebar-text">Invoices</span></a>
-                <a href="create-invoice.html" class="flex items-center px-4 py-2.5 text-white bg-slate-700/80 rounded-lg font-semibold"><i class="fa-solid fa-plus-circle w-6 h-6 text-indigo-400 flex-shrink-0"></i><span class="ml-3 sidebar-text">Create Invoice</span></a>
-                <a href="clients.html" class="flex items-center px-4 py-2.5 hover:bg-slate-700/50 rounded-lg"><i class="fa-solid fa-users w-6 h-6 flex-shrink-0"></i><span class="ml-3 sidebar-text">Clients</span></a>
-                <a href="reports.html" class="flex items-center px-4 py-2.5 hover:bg-slate-700/50 rounded-lg"><i class="fa-solid fa-chart-line w-6 h-6 flex-shrink-0"></i><span class="ml-3 sidebar-text">Reports</span></a>
-                <a href="settings.html" class="flex items-center px-4 py-2.5 hover:bg-slate-700/50 rounded-lg"><i class="fa-solid fa-gear w-6 h-6 flex-shrink-0"></i><span class="ml-3 sidebar-text">Settings</span></a>
-            </nav>
-            <div class="px-4 py-4 border-t border-slate-700">
-                <div class="flex items-center justify-between">
-                    <a href="#" class="flex items-center w-full p-2 rounded-lg hover:bg-slate-700 overflow-hidden">
-                        <img src="https://i.pravatar.cc/40?u=a042581f4e29026704d" alt="User Avatar" class="w-10 h-10 rounded-full flex-shrink-0">
-                        <div id="sidebar-user-info" class="ml-3"><p class="text-sm font-semibold text-white">Alex Hartman</p><p class="text-xs text-slate-400">View Profile</p></div>
-                    </a>
-                    <button id="sidebar-toggle" class="p-2 rounded-lg hover:bg-slate-700">
-                        <i id="sidebar-icon" class="fa-solid fa-angles-left text-lg"></i>
-                    </button>
-                </div>
-            </div>
-        </aside>
+<div class="flex min-h-screen">
 
-        <!-- ==== Main Content Area ==== -->
-        <main class="overflow-y-auto">
-            <div class="p-10 max-w-4xl mx-auto">
-                <header class="mb-8">
-                    <h1 class="text-3xl font-bold text-slate-900">Create Invoice</h1>
-                    <p class="text-slate-500 mt-1">Fill in the details to generate your invoice.</p>
-                </header>
-                 <div id="invoice-editor-container" class="space-y-8 bg-white p-8 rounded-xl shadow-sm border border-slate-200">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div>
-                            <h3 class="text-lg font-semibold mb-2 text-slate-800">Bill From</h3>
-                            <div class="space-y-2">
-                                <select id="from-select" class="w-full p-2 border border-gray-300 rounded-md"></select>
-                                <div id="custom-from-fields" class="hidden space-y-2">
-                                    <input type="text" id="from_name" placeholder="Your Name / Business" class="w-full p-2 border border-gray-300 rounded-md">
-                                    <textarea id="from_address" rows="2" placeholder="Your Address" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-semibold mb-2 text-slate-800">Bill To</h3>
-                            <div class="space-y-2">
-                                <select id="client-select" class="w-full p-2 border border-gray-300 rounded-md"></select>
-                                <textarea id="to_address" rows="3" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Client Address"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="border-t border-slate-200 pt-6">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div><label class="block text-sm font-medium text-gray-700">Invoice #</label><input type="text" id="invoice_number" class="mt-1 w-full p-2 border border-gray-300 rounded-md"></div>
-                            <div><label class="block text-sm font-medium text-gray-700">Date Issued</label><input type="date" id="date_issued" class="mt-1 w-full p-2 border border-gray-300 rounded-md"></div>
-                            <div><label class="block text-sm font-medium text-gray-700">Due Date</label><input type="date" id="date_due" class="mt-1 w-full p-2 border border-gray-300 rounded-md"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="border-t border-slate-200 pt-6">
-                        <h3 class="text-lg font-semibold text-slate-800">Items</h3>
-                        <div class="grid grid-cols-12 gap-2 text-sm font-medium text-slate-500 mt-4">
-                            <div class="col-span-5">Description</div>
-                            <div class="col-span-2 text-center">Qty</div>
-                            <div class="col-span-2 text-center">Rate</div>
-                            <div class="col-span-2 text-center">Total</div>
-                        </div>
-                        <div id="new_item_form" class="mt-1"></div>
-                        <button id="add_item_btn" class="mt-2 w-full text-white font-semibold py-2.5 px-4 rounded-lg btn-fancy">
-                            <i class="fa-solid fa-plus mr-2"></i> Add Item to Invoice
-                        </button>
-                        <div id="items_container" class="mt-4 space-y-2 border-t pt-4 border-slate-200"></div>
-                    </div>
-
-                    <div class="border-t border-slate-200 pt-6">
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                            <div class="col-span-2 md:col-span-1"><label class="block text-sm font-medium text-gray-700">Tax (%)</label><input type="number" id="tax_rate" placeholder="0" min="0" class="mt-1 w-full p-2 border border-gray-300 rounded-md"></div>
-                            <div class="col-span-2 md:col-span-1"><label class="block text-sm font-medium text-gray-700">Discount ($)</label><input type="number" id="discount_amount" placeholder="0" min="0" class="mt-1 w-full p-2 border border-gray-300 rounded-md"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="border-t border-slate-200 pt-6">
-                         <input type="text" id="notes" placeholder="Add a note (e.g. Thank you for your business!)" class="w-full p-2 border border-gray-300 rounded-md">
-                    </div>
-
-                    <div class="border-t border-slate-200 pt-6">
-                        <div class="flex justify-end">
-                            <div class="w-full max-w-sm space-y-3">
-                                <div class="flex justify-between"><span class="text-gray-600">Subtotal</span><span id="editor-subtotal" class="font-semibold text-lg text-gray-800">$0.00</span></div>
-                                <div class="flex justify-between"><span class="text-gray-600">Tax</span><span id="editor-tax" class="font-semibold text-lg text-gray-800">$0.00</span></div>
-                                <div class="flex justify-between"><span class="text-gray-600">Discount</span><span id="editor-discount" class="font-semibold text-lg text-gray-800">-$0.00</span></div>
-                                <hr class="my-2 border-gray-300">
-                                <div class="flex justify-between font-bold text-2xl"><span class="text-slate-800">Total Due</span><span id="editor-total" class="gradient-text">$0.00</span></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="border-t border-slate-200 pt-6 text-right">
-                         <button id="preview_btn" class="text-white font-semibold px-8 py-3 rounded-lg btn-fancy text-lg">
-                            Preview Invoice <i class="fa-solid fa-arrow-right ml-2"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </main>
+  <!-- Sidebar -->
+  <aside class="w-64 bg-white shadow-md hidden md:flex flex-col">
+    <div class="px-6 py-4 border-b">
+      <h1 class="text-xl font-bold text-indigo-600">Invoice<span class="text-gray-900">Pro</span></h1>
     </div>
+    <nav class="flex-1 px-4 py-6 space-y-2">
+      <a href="dashboard.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">🏠 Dashboard</a>
+      <a href="create-invoice.html" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-indigo-50 text-indigo-700 font-semibold">🧾 Create Invoice</a>
+      <a href="invoices.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">💼 Invoices</a>
+      <a href="clients.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">👤 Clients</a>
+      <a href="reports.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">📊 Reports</a>
+      <a href="settings.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">⚙️ Settings</a>
+    </nav>
+    <div class="p-4 border-t">
+      <button class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition">Logout</button>
+    </div>
+  </aside>
 
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        let invoiceItems = [];
-        const mockClients = [
-            { name: 'Select a client...', address: '' },
-            { name: 'Acme Corp', address: '123 Main St\nNew York, NY 10001' },
-            { name: 'Innovate LLC', address: '456 Market St\nSan Francisco, CA 94105' },
-        ];
-        const mockBillFrom = [
-            { name: 'My Business', address: '123 Design St\nSydney, NSW 2000' },
-            { name: 'My Freelance Service', address: '456 Creative Ave\nMelbourne, VIC 3000' },
-            { name: '--- Use a different address ---', address: 'NEW' },
-        ];
-        
-        const editorContainer = document.getElementById('invoice-editor-container');
-        const itemsContainer = document.getElementById('items_container');
-        const newItemFormContainer = document.getElementById('new_item_form');
-        
-        function initialize() {
-            document.getElementById('invoice_number').value = `INV-${Math.floor(1000 + Math.random() * 9000)}`;
-            const today = new Date();
-            const issuedDateEl = document.getElementById('date_issued');
-            const dueDateEl = document.getElementById('date_due');
-            
-            issuedDateEl.value = today.toISOString().split('T')[0];
-            dueDateEl.min = issuedDateEl.value;
-            today.setDate(today.getDate() + 14);
-            dueDateEl.value = today.toISOString().split('T')[0];
+  <!-- Main -->
+  <main class="flex-1 flex flex-col">
 
-            const clientSelect = document.getElementById('client-select');
-            clientSelect.innerHTML = mockClients.map(c => `<option value="${c.address}">${c.name}</option>`).join('');
-            
-            const fromSelect = document.getElementById('from-select');
-            fromSelect.innerHTML = mockBillFrom.map(p => `<option value="${p.address}" data-name="${p.name}">${p.name}</option>`).join('');
-            fromSelect.dispatchEvent(new Event('change'));
+    <!-- Topbar -->
+    <header class="flex items-center justify-between bg-white shadow px-6 py-4 sticky top-0 z-10">
+      <h2 class="text-2xl font-semibold">Create Invoice</h2>
+      <div class="flex items-center gap-4">
+        <input id="globalSearch" type="text" placeholder="Search..." class="px-3 py-2 border rounded-lg focus:ring focus:ring-indigo-200" />
+        <div class="w-10 h-10 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-800 font-bold">R</div>
+      </div>
+    </header>
 
-            document.querySelectorAll('[data-pristine="true"]').forEach(el => el.addEventListener('focus', clearOnFirstFocus, { once: true }));
-            
-            addNewItemForm();
-            updateEditorTotals();
-        }
+    <!-- Content grid -->
+    <section class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-        if (editorContainer) {
-            editorContainer.addEventListener('input', (e) => {
-                const itemRow = e.target.closest('[data-index]');
-                if (itemRow) {
-                    calculateItemTotal(itemRow);
-                }
-                updateEditorTotals();
-            });
-        }
-        
-        document.getElementById('add_item_btn').addEventListener('click', () => {
-            const desc = document.getElementById('new_item_description').value;
-            const qty = parseFloat(document.getElementById('new_item_quantity').value) || 0;
-            const rate = parseFloat(document.getElementById('new_item_rate').value) || 0;
-            if (desc) {
-                addItem({ description: desc, quantity: qty, rate: rate });
-            }
-        });
-        document.getElementById('preview_btn').addEventListener('click', saveAndPreview);
+      <!-- Left: Form -->
+      <div class="lg:col-span-2 space-y-6">
 
-        document.getElementById('from-select').addEventListener('change', (e) => {
-            const customFields = document.getElementById('custom-from-fields');
-            if (e.target.value === 'NEW') {
-                customFields.classList.remove('hidden');
-                document.getElementById('from_name').value = '';
-                document.getElementById('from_address').value = '';
-            } else {
-                customFields.classList.add('hidden');
-                const selectedOption = e.target.options[e.target.selectedIndex];
-                document.getElementById('from_name').value = selectedOption.dataset.name;
-                document.getElementById('from_address').value = e.target.value;
-            }
-        });
+        <!-- Invoice Details -->
+        <div class="bg-white rounded-2xl shadow p-6">
+          <div class="flex items-start justify-between">
+            <h3 class="text-lg font-semibold">Invoice Details</h3>
+            <div class="space-x-2">
+              <button id="saveDraftBtn" class="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">Save Draft</button>
+              <button id="sendBtn" class="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">Send</button>
+            </div>
+          </div>
 
-        function renderItems() {
-            itemsContainer.innerHTML = invoiceItems.map((item, index) => {
-                const total = item.quantity * item.rate;
-                return `
-                <div class="grid grid-cols-12 gap-2 items-center p-2 bg-slate-50 rounded-md" data-index="${index}">
-                    <input type="text" value="${item.description}" class="col-span-5 p-2 border-gray-300 rounded-md item-desc">
-                    <input type="number" value="${item.quantity}" min="0" class="col-span-2 p-2 border-gray-300 rounded-md text-center item-qty">
-                    <input type="number" value="${item.rate.toFixed(2)}" min="0" step="0.01" class="col-span-2 p-2 border-gray-300 rounded-md text-center item-rate">
-                    <span class="col-span-2 text-center font-bold text-slate-600 item-total">$${total.toFixed(2)}</span>
-                    <button class="col-span-1 text-red-500 hover:text-red-700 remove-item-btn"><i class="fa-solid fa-trash-can"></i></button>
-                </div>
-            `}).join('');
-            document.querySelectorAll('.remove-item-btn').forEach(btn => btn.addEventListener('click', (e) => removeItem(parseInt(e.target.closest('[data-index]').dataset.index))));
-        }
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div>
+              <label class="text-sm font-medium text-gray-600">Client</label>
+              <select id="clientSelect" class="mt-1 w-full border rounded-lg px-3 py-2"></select>
+              <div class="mt-2 flex gap-2">
+                <input id="clientSearch" type="text" placeholder="Search / Add client..." class="flex-1 border rounded-lg px-3 py-2" />
+                <button id="addClientBtn" class="px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">+ Client</button>
+              </div>
+            </div>
 
-        function calculateItemTotal(row) {
-            if (!row) return;
-            const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
-            const rate = parseFloat(row.querySelector('.item-rate').value) || 0;
-            row.querySelector('.item-total').textContent = `$${(qty * rate).toFixed(2)}`;
-        }
+            <div>
+              <label class="text-sm font-medium text-gray-600">Invoice #</label>
+              <input id="invoiceNumber" type="text" class="mt-1 w-full border rounded-lg px-3 py-2" placeholder="#INV-0001" />
+            </div>
 
-        function addNewItemForm() {
-            newItemFormContainer.innerHTML = `
-                 <div class="grid grid-cols-12 gap-2 items-center">
-                    <input type="text" id="new_item_description" placeholder="Item description" class="col-span-5 p-2 border border-gray-300 rounded-md">
-                    <input type="number" id="new_item_quantity" value="1" min="1" class="col-span-2 p-2 border border-gray-300 rounded-md text-center">
-                    <input type="number" id="new_item_rate" value="0.00" min="0" step="0.01" class="col-span-2 p-2 border border-gray-300 rounded-md text-center">
-                    <span id="new_item_total" class="col-span-2 text-center font-bold text-slate-600">$0.00</span>
-                </div>`;
-            
-            ['new_item_quantity', 'new_item_rate'].forEach(id => document.getElementById(id).addEventListener('input', () => {
-                const qty = parseFloat(document.getElementById('new_item_quantity').value) || 0;
-                const rate = parseFloat(document.getElementById('new_item_rate').value) || 0;
-                document.getElementById('new_item_total').textContent = `$${(qty * rate).toFixed(2)}`;
-            }));
-        }
+            <div>
+              <label class="text-sm font-medium text-gray-600">Invoice Date</label>
+              <input id="invoiceDate" type="date" class="mt-1 w-full border rounded-lg px-3 py-2" />
+            </div>
 
-        function addItem(item) {
-            invoiceItems.push(item);
-            renderItems();
-            addNewItemForm();
-            updateEditorTotals();
-        }
-        function removeItem(index) {
-            invoiceItems.splice(index, 1);
-            renderItems();
-            updateEditorTotals();
-        }
+            <div>
+              <label class="text-sm font-medium text-gray-600">Due Date</label>
+              <input id="dueDate" type="date" class="mt-1 w-full border rounded-lg px-3 py-2" />
+            </div>
+          </div>
+        </div>
 
-        function updateInvoiceItemsFromDOM() {
-            const itemRows = itemsContainer.querySelectorAll('[data-index]');
-            invoiceItems = Array.from(itemRows).map(row => ({
-                description: row.querySelector('.item-desc').value,
-                quantity: parseFloat(row.querySelector('.item-qty').value) || 0,
-                rate: parseFloat(row.querySelector('.item-rate').value) || 0
-            }));
-        }
-        
-        function updateEditorTotals() {
-            updateInvoiceItemsFromDOM();
-            let subtotal = 0;
-            invoiceItems.forEach(item => subtotal += item.quantity * item.rate);
-            
-            const taxRate = parseFloat(document.getElementById('tax_rate').value) || 0;
-            const discountAmount = parseFloat(document.getElementById('discount_amount').value) || 0;
-            const taxAmount = (subtotal * taxRate) / 100;
-            const total = subtotal + taxAmount - discountAmount;
+        <!-- Items Section -->
+        <div class="bg-white rounded-2xl shadow p-6">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold">Items</h3>
+            <div class="text-sm text-gray-500">Tip: press <kbd class="bg-gray-100 px-2 rounded">Tab</kbd> to move quickly</div>
+          </div>
 
-            document.getElementById('editor-subtotal').textContent = `$${subtotal.toFixed(2)}`;
-            document.getElementById('editor-tax').textContent = `$${taxAmount.toFixed(2)}`;
-            document.getElementById('editor-discount').textContent = `-$${discountAmount.toFixed(2)}`;
-            document.getElementById('editor-total').textContent = `$${total.toFixed(2)}`;
-        }
-        
-        function clearOnFirstFocus(event) {
-             if (event.target.dataset.pristine === 'true') {
-                event.target.value = '';
-                event.target.dataset.pristine = 'false';
-            }
-        }
-        function saveAndPreview() {
-            updateInvoiceItemsFromDOM();
-            const invoiceData = {
-                fromName: document.getElementById('from_name').value,
-                fromAddress: document.getElementById('from_address').value,
-                clientName: document.getElementById('client-select').value,
-                toAddress: document.getElementById('to_address').value,
-                invNumber: document.getElementById('invoice_number').value,
-                dateIssued: document.getElementById('date_issued').value,
-                dateDue: document.getElementById('date_due').value,
-                items: invoiceItems,
-                taxRate: parseFloat(document.getElementById('tax_rate').value) || 0,
-                discountAmount: parseFloat(document.getElementById('discount_amount').value) || 0,
-                notes: document.getElementById('notes').value,
-            };
+          <div class="mt-4 flex items-center gap-3">
+            <button id="addItemBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">+ Add Item</button>
+            <div id="presetsContainer" class="flex gap-2"></div>
+          </div>
 
-            localStorage.setItem('invoiceDataForPreview', JSON.stringify(invoiceData));
-            window.location.href = 'invoice-preview.html';
-        }
-        
-        const issuedDateEl = document.getElementById('date_issued');
-        const dueDateEl = document.getElementById('date_due');
-        issuedDateEl.addEventListener('change', () => {
-            dueDateEl.min = issuedDateEl.value;
-            if (new Date(dueDateEl.value) < new Date(issuedDateEl.value)) dueDateEl.value = issuedDateEl.value;
-        });
+          <div id="addedItemsContainer" class="added-items-border mt-4">
+            <table id="itemsTable" class="min-w-full text-sm">
+              <thead class="bg-gray-100 text-gray-700">
+                <tr>
+                  <th class="px-4 py-2 text-left">Description</th>
+                  <th class="px-4 py-2 w-20 text-left">Qty</th>
+                  <th class="px-4 py-2 w-32 text-left">Unit</th>
+                  <th class="px-4 py-2 w-32 text-left">Price</th>
+                  <th class="px-4 py-2 w-32 text-left">Line Total</th>
+                  <th class="px-4 py-2 w-12"></th>
+                </tr>
+              </thead>
+              <tbody id="itemRows" class="divide-y">
+                <tr class="item-row">
+                  <td class="px-3 py-2"><input class="desc w-full border rounded px-3 py-2" placeholder="Item description" /></td>
+                  <td class="px-3 py-2"><input type="number" class="qty w-full border rounded px-3 py-2" value="1" min="0" /></td>
+                  <td class="px-3 py-2"><input class="unit w-full border rounded px-3 py-2" placeholder="pcs / hr" /></td>
+                  <td class="px-3 py-2"><input type="number" class="price w-full border rounded px-3 py-2" value="0" min="0" step="0.01" /></td>
+                  <td class="px-3 py-2 text-gray-700 total">$0.00</td>
+                  <td class="px-3 py-2 text-center"><button class="removeRow text-red-500 hover:text-red-700">✖</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-        const layout = document.getElementById('main-layout');
-        const toggleBtn = document.getElementById('sidebar-toggle');
-        const toggleIcon = document.getElementById('sidebar-icon');
-        toggleBtn.addEventListener('click', () => {
-            layout.classList.toggle('sidebar-collapsed');
-            toggleIcon.className = layout.classList.contains('sidebar-collapsed') ? 'fa-solid fa-angles-right text-lg' : 'fa-solid fa-angles-left text-lg';
-        });
+        <!-- Notes & Totals -->
+        <div class="bg-white rounded-2xl shadow p-6 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+          <div class="w-full md:w-1/2">
+            <label class="text-sm font-medium text-gray-600">Notes / Terms</label>
+            <textarea id="notes" rows="4" class="mt-1 w-full border rounded-lg px-3 py-2" placeholder="Notes visible on PDF"></textarea>
+          </div>
 
-        initialize();
-    });
-    </script>
+          <div class="w-full md:w-1/3 space-y-2">
+            <div class="flex justify-between text-sm text-gray-700"><span>Subtotal</span><span id="subtotal">$0.00</span></div>
+            <div class="flex justify-between text-sm text-gray-700"><span>Discount</span><span id="discount">$0.00</span></div>
+            <div class="flex justify-between text-sm text-gray-700"><span>Tax</span><span id="tax">$0.00</span></div>
+            <div class="flex justify-between text-lg font-semibold text-gray-900 border-t pt-2"><span>Total</span><span id="grandTotal">$0.00</span></div>
+
+            <div class="flex gap-2 mt-3">
+              <button id="previewPdfBtn" class="w-full px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">Preview PDF</button>
+              <button id="downloadBtn" class="w-full px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">Download</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Preview -->
+      <aside class="bg-white rounded-2xl shadow p-6">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold">Invoice Preview</h3>
+          <div class="text-xs text-gray-500">Live</div>
+        </div>
+
+        <div id="previewCard" class="mt-4 border rounded-lg p-4 bg-gray-50 h-[72vh] overflow-auto">
+          <div class="mb-4">
+            <div class="flex justify-between">
+              <div>
+                <h4 class="font-bold text-lg" id="pvCompanyName">Your Company</h4>
+                <div id="pvCompanyAddress" class="text-sm text-gray-600">123 Street, City</div>
+              </div>
+              <div class="text-right">
+                <div class="text-sm text-gray-500">Invoice</div>
+                <div id="pvNumber" class="font-semibold">—</div>
+              </div>
+            </div>
+
+            <div class="mt-4 grid grid-cols-2 gap-2 text-sm text-gray-700">
+              <div><div class="text-xs text-gray-500">Bill To</div><div id="pvClient">—</div></div>
+              <div><div class="text-xs text-gray-500">Dates</div><div id="pvDate">—</div><div id="pvDue" class="text-xs text-gray-500">—</div></div>
+            </div>
+          </div>
+
+          <table class="w-full text-sm border-collapse">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="px-2 py-1 text-left">Description</th>
+                <th class="px-2 py-1">Qty</th>
+                <th class="px-2 py-1">Unit</th>
+                <th class="px-2 py-1">Price</th>
+                <th class="px-2 py-1">Total</th>
+              </tr>
+            </thead>
+            <tbody id="pvItems"></tbody>
+          </table>
+
+          <div class="mt-4 space-y-1 text-sm">
+            <div class="flex justify-between"><span>Subtotal</span><span id="pvSubtotal">$0.00</span></div>
+            <div class="flex justify-between"><span>Tax</span><span id="pvTax">$0.00</span></div>
+            <div class="flex justify-between font-semibold text-lg"><span>Total</span><span id="pvTotal">$0.00</span></div>
+          </div>
+
+          <div class="mt-4 text-sm text-gray-600">
+            <strong>Notes</strong>
+            <div id="pvNotes">—</div>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </main>
+</div>
+
+<!-- PDF Preview Fix -->
+<script>
+  document.getElementById('previewPdfBtn').addEventListener('click', () => {
+    const preview = document.getElementById('previewCard').innerHTML;
+    const win = window.open('', '_blank');
+    win.document.write(`
+      <html>
+        <head>
+          <title>Invoice Preview</title>
+          <style>
+            body { font-family: 'Inter', sans-serif; padding: 20px; color: #111; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background: #f3f4f6; }
+          </style>
+        </head>
+        <body>${preview}</body>
+      </html>
+    `);
+    win.document.close();
+    win.print();
+  });
+</script>
+
 </body>
 </html>
-
