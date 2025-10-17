@@ -158,7 +158,7 @@
       document.getElementById('dueDate').valueAsDate = new Date(today.getTime() + 30 * 86400000);
 
       // --- REVISED DYNAMIC SIDEBAR LOADER ---
-      fetch('_sidebar.html')
+      fetch('sidebar.html')
         .then(response => response.text())
         .then(html => {
           const sidebarPlaceholder = document.getElementById('main-sidebar');
