@@ -7,12 +7,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="auth-improved.js"></script>
+    <script src="auth-improved.js" defer></script>
     
     <style>
         /* --- Enhanced Dark Mode Design --- */
         body {
-            background-color: #111827; /* Dark Gray-Blue */
+            background-color: #111827;
             background-image: 
                 radial-gradient(at 20% 20%, hsla(216, 70%, 25%, 0.3) 0px, transparent 50%),
                 radial-gradient(at 80% 20%, hsla(280, 60%, 30%, 0.3) 0px, transparent 50%),
@@ -20,19 +20,19 @@
                 radial-gradient(at 80% 80%, hsla(220, 70%, 35%, 0.3) 0px, transparent 50%);
         }
         .glass-card {
-            background: rgba(31, 41, 55, 0.6); /* Semi-transparent dark gray */
+            background: rgba(31, 41, 55, 0.6);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
         .form-input {
-            background-color: rgba(55, 65, 81, 0.5); /* Darker input background */
+            background-color: rgba(55, 65, 81, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #F3F4F6; /* Light gray text */
+            color: #F3F4F6;
         }
         .form-input:focus {
             background-color: rgba(55, 65, 81, 0.8);
-            border-color: #3b82f6; /* Blue border on focus */
+            border-color: #3b82f6;
             box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
         }
         .primary-button {
@@ -43,18 +43,12 @@
             transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(59, 130, 246, 0.25);
         }
-        /* --- Animation for messages --- */
-        .message-box {
-            animation: fadeIn 0.5s ease-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .message-box { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-10px); } }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4 font-sans">
-
     <div class="relative z-10 w-full max-w-md">
         <div class="text-center mb-8">
             <h1 class="text-5xl font-bold text-white mb-2 flex items-center justify-center gap-3">
@@ -62,13 +56,11 @@
             </h1>
             <p class="text-gray-300 text-lg">Streamline Your Business Billing</p>
         </div>
-
         <div id="login-card" class="glass-card rounded-2xl p-8">
             <div class="text-center mb-8">
                 <h2 class="text-3xl font-bold text-white mb-2">Welcome Back</h2>
                 <p class="text-gray-400">Sign in to manage your invoices.</p>
             </div>
-
             <form id="login-form" class="space-y-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
@@ -77,7 +69,6 @@
                         <input type="email" id="email" class="form-input w-full pl-12 pr-4 py-3 rounded-lg transition-all" placeholder="you@company.com" required>
                     </div>
                 </div>
-
                 <div>
                     <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
                     <div class="relative">
@@ -88,7 +79,6 @@
                         </button>
                     </div>
                 </div>
-
                 <div class="flex items-center justify-between text-sm">
                     <label class="flex items-center text-gray-400">
                         <input type="checkbox" id="remember-me" class="rounded border-gray-500 bg-gray-700 text-blue-500 focus:ring-blue-500">
@@ -96,65 +86,69 @@
                     </label>
                     <a href="#" class="text-blue-400 hover:text-blue-300">Forgot password?</a>
                 </div>
-
                 <div id="message-container" class="hidden"></div>
-
                 <button type="submit" class="primary-button w-full text-white py-3 px-4 rounded-lg font-semibold text-lg">
                     Sign In
                 </button>
             </form>
-
             <div class="relative my-6">
                 <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-600"></div></div>
                 <div class="relative flex justify-center text-sm"><span class="px-2 bg-gray-700 text-gray-400">Or</span></div>
             </div>
-            
             <div class="text-center">
                 <button onclick="quickLogin()" class="w-full bg-gray-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-gray-500 transition-colors">
                     <i class="fas fa-rocket mr-2"></i>Quick Test Login
                 </button>
             </div>
         </div>
-        
         <div class="text-center mt-8">
             <p class="text-gray-500 text-sm">© 2025 InvoiceGen. All Rights Reserved.</p>
         </div>
     </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const authService = window.ImprovedAuthService;
-
+            if (authService.currentUser || localStorage.getItem('isLoggedIn')) {
+                window.location.href = 'dashboard.html';
+                return;
+            }
             const loginForm = document.getElementById('login-form');
             const togglePassword = document.getElementById('toggle-password');
-
             loginForm.addEventListener('submit', async (event) => {
                 event.preventDefault();
                 const email = document.getElementById('email').value.trim();
                 const password = document.getElementById('password').value;
-
                 if (!email || !password) {
                     showMessage('Please fill in all fields.', 'error');
                     return;
                 }
-
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailPattern.test(email)) {
+                    showMessage('Please enter a valid email address.', 'error');
+                    return;
+                }
                 const loginButton = event.target.querySelector('button[type="submit"]');
                 const originalText = loginButton.textContent;
                 loginButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i>`;
                 loginButton.disabled = true;
-
-                const result = await authService.login(email, password);
-                
-                if (result.success) {
-                    showMessage('Success! Redirecting...', 'success');
-                    setTimeout(() => window.location.href = 'index.html', 1500);
-                } else {
-                    showMessage(result.message || 'Login failed. Please try again.', 'error');
-                    loginButton.textContent = originalText;
+                try {
+                    const result = await authService.login(email, password);
+                    if (result.success) {
+                        authService.currentUser = { id: 'user', name: 'User', email: email };
+                        localStorage.setItem('isLoggedIn', 'true');
+                        showMessage('Success! Redirecting...', 'success');
+                        setTimeout(() => window.location.href = 'dashboard.html', 1500);
+                    } else {
+                        showMessage(result.message || 'Login failed. Please try again.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    showMessage('An unexpected error occurred. Please try again.', 'error');
+                } finally {
+                    loginButton.innerHTML = originalText;
                     loginButton.disabled = false;
                 }
             });
-
             togglePassword.addEventListener('click', function() {
                 const passwordInput = document.getElementById('password');
                 const icon = this.querySelector('i');
@@ -162,8 +156,6 @@
                 passwordInput.type = isPassword ? 'text' : 'password';
                 icon.className = isPassword ? 'fas fa-eye-slash' : 'fas fa-eye';
             });
-            
-            // Initial animation
             anime({
                 targets: '#login-card',
                 translateY: [50, 0],
@@ -172,19 +164,30 @@
                 easing: 'easeOutExpo'
             });
         });
-
         function quickLogin() {
-            document.getElementById('email').value = 'test@invoicegen.com';
-            document.getElementById('password').value = 'test123';
-            document.getElementById('login-form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+            console.log('Quick login triggered - simulating persistent login');
+            const container = document.getElementById('message-container');
+            container.classList.add('hidden');
+            const authService = window.ImprovedAuthService;
+            authService.currentUser = { id: 'demo', name: 'Rujan Basnet', email: 'demo@invoicegen.com' };
+            localStorage.setItem('isLoggedIn', 'true');
+            authService.onAuthChange();
+            showMessage('Quick login successful! Redirecting...', 'success');
+            setTimeout(() => window.location.href = 'dashboard.html', 1500);
         }
-
         function showMessage(message, type) {
             const container = document.getElementById('message-container');
-            const color = type === 'success' ? 'green' : 'red';
-            
-            container.innerHTML = `<div class="message-box bg-${color}-500/20 text-${color}-300 text-sm font-medium p-3 rounded-lg">${message}</div>`;
+            const bgClass = type === 'success' ? 'bg-green-500/20' : 'bg-red-500/20';
+            const textClass = type === 'success' ? 'text-green-300' : 'text-red-300';
+            container.innerHTML = `<div class="message-box ${bgClass} ${textClass} text-sm font-medium p-3 rounded-lg">${message}</div>`;
             container.classList.remove('hidden');
+            setTimeout(() => {
+                const messageBox = container.querySelector('.message-box');
+                if (messageBox) {
+                    messageBox.style.animation = 'fadeOut 0.5s ease-out forwards';
+                    setTimeout(() => container.classList.add('hidden'), 500);
+                }
+            }, 5000);
         }
     </script>
 </body>
