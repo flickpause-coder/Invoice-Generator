@@ -6,24 +6,19 @@
   <title>Dashboard — InvoicePro</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <link rel="stylesheet" href="css/modern-ui.css">
   <style>
     body { font-family: 'Inter', sans-serif; }
-    #user-menu {
-        transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
-    }
+    #user-menu { transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out; }
   </style>
 </head>
 <body data-modern-ui class="antialiased">
-<body class="bg-slate-50 text-slate-900">
 
   <div class="flex min-h-screen">
 
     <!-- Sidebar -->
     <aside id="main-sidebar" data-active-nav="dashboard" class="hidden md:flex w-[19.5rem] shrink-0" aria-label="Sidebar"></aside>
-    <aside id="main-sidebar" data-active-nav="dashboard" class="w-64 bg-white shadow-md hidden md:flex flex-col"></aside>
 
     <!-- Main content -->
     <main class="flex-1 flex flex-col">
@@ -47,10 +42,6 @@
               <a href="settings.html" class="block px-5 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 rounded-xl">User Details</a>
               <a href="subscription.html" class="block px-5 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 rounded-xl">Subscription</a>
               <a href="#" id="logout-link" class="logout-button block px-5 py-2 text-sm font-medium text-rose-400 hover:text-rose-200 hover:bg-rose-500/10 rounded-xl">Logout</a>
-              <hr class="my-1">
-              <a href="settings.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">User Details</a>
-              <a href="subscription.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Subscription</a>
-              <a href="#" id="logout-link" class="logout-button block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
             </div>
           </div>
         </div>
@@ -60,67 +51,68 @@
       <section class="flex-1 overflow-y-auto">
         <div class="max-w-7xl mx-auto px-6 py-10 space-y-10">
 
-        <!-- Summary Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <button onclick="filterInvoices('all')" class="surface-card metric-card text-left">
-            <h3>Total Invoices</h3>
-            <p class="metric-value" id="totalInvoices">3</p>
-            <span class="text-sm text-slate-400">Across all statuses</span>
-          </button>
+          <!-- Summary Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <button onclick="filterInvoices('all')" class="surface-card metric-card text-left">
+              <h3>Total Invoices</h3>
+              <p class="metric-value" id="totalInvoices">3</p>
+              <span class="text-sm text-slate-400">Across all statuses</span>
+            </button>
 
-          <button onclick="filterInvoices('pending')" class="surface-card metric-card text-left">
-            <h3>Pending</h3>
-            <p class="metric-value text-amber-300" id="pendingInvoices">1</p>
-            <span class="text-sm text-slate-400">Awaiting payment</span>
-          </button>
+            <button onclick="filterInvoices('pending')" class="surface-card metric-card text-left">
+              <h3>Pending</h3>
+              <p class="metric-value text-amber-300" id="pendingInvoices">1</p>
+              <span class="text-sm text-slate-400">Awaiting payment</span>
+            </button>
 
-          <button onclick="filterInvoices('overdue')" class="surface-card metric-card text-left">
-            <h3>Overdue</h3>
-            <p class="metric-value text-rose-300" id="overdueInvoices">1</p>
-            <span class="text-sm text-slate-400">Needs attention</span>
-          </button>
+            <button onclick="filterInvoices('overdue')" class="surface-card metric-card text-left">
+              <h3>Overdue</h3>
+              <p class="metric-value text-rose-300" id="overdueInvoices">1</p>
+              <span class="text-sm text-slate-400">Needs attention</span>
+            </button>
 
-          <button onclick="filterInvoices('paid')" class="surface-card metric-card text-left">
-            <h3>Paid</h3>
-            <p class="metric-value text-emerald-300" id="paidInvoices">1</p>
-            <span class="text-sm text-slate-400">Cleared invoices</span>
-          </button>
-        </div>
-
-        <!-- Reports Shortcut -->
-        <div class="surface-card surface-card--soft px-6 py-7 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div class="space-y-1">
-            <h3 class="text-xl font-semibold text-white">Reports &amp; Insights</h3>
-            <p class="text-slate-400 text-sm max-w-xl">View revenue, client activity, and performance trends powered by real-time data.</p>
+            <button onclick="filterInvoices('paid')" class="surface-card metric-card text-left">
+              <h3>Paid</h3>
+              <p class="metric-value text-emerald-300" id="paidInvoices">1</p>
+              <span class="text-sm text-slate-400">Cleared invoices</span>
+            </button>
           </div>
-          <a href="reports.html" class="primary-action">
-            <span>View Reports</span>
-            <span aria-hidden="true" class="text-lg">↗</span>
-          </a>
-        </div>
 
-        <!-- Recent Invoices Table -->
-        <div class="surface-card px-6 py-7 overflow-x-auto">
-          <div class="flex items-center justify-between mb-5">
-            <h3 class="text-lg font-semibold">Recent Invoices</h3>
-            <a href="invoices.html" class="secondary-action">View all</a>
+          <!-- Reports Shortcut -->
+          <div class="surface-card surface-card--soft px-6 py-7 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div class="space-y-1">
+              <h3 class="text-xl font-semibold text-white">Reports &amp; Insights</h3>
+              <p class="text-slate-400 text-sm max-w-xl">View revenue, client activity, and performance trends powered by real-time data.</p>
+            </div>
+            <a href="reports.html" class="primary-action">
+              <span>View Reports</span>
+              <span aria-hidden="true" class="text-lg">↗</span>
+            </a>
           </div>
-          <table class="modern-table text-sm">
-            <thead>
-              <tr>
-                <th class="px-4 py-3 text-left">Invoice #</th>
-                <th class="px-4 py-3 text-left">Client</th>
-                <th class="px-4 py-3 text-left">Date</th>
-                <th class="px-4 py-3 text-left">Amount</th>
-                <th class="px-4 py-3 text-left">Status</th>
-                <th class="px-4 py-3 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="invoiceTableBody" class="divide-y divide-white/5">
-              <!-- JS will populate this dynamically -->
-            </tbody>
-          </table>
-        </div>
+
+          <!-- Recent Invoices Table -->
+          <div class="surface-card px-6 py-7 overflow-x-auto">
+            <div class="flex items-center justify-between mb-5">
+              <h3 class="text-lg font-semibold">Recent Invoices</h3>
+              <a href="invoices.html" class="secondary-action">View all</a>
+            </div>
+            <table class="modern-table text-sm">
+              <thead>
+                <tr>
+                  <th class="px-4 py-3 text-left">Invoice #</th>
+                  <th class="px-4 py-3 text-left">Client</th>
+                  <th class="px-4 py-3 text-left">Date</th>
+                  <th class="px-4 py-3 text-left">Amount</th>
+                  <th class="px-4 py-3 text-left">Status</th>
+                  <th class="px-4 py-3 text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="invoiceTableBody" class="divide-y divide-white/5">
+                <!-- JS will populate this dynamically -->
+              </tbody>
+            </table>
+          </div>
+
         </div>
       </section>
     </main>
@@ -131,81 +123,78 @@
   <!-- Functional Scripts -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // --- DATA ---
-        const invoices = [
-            { id: 'INV-00128', client: 'Acme Corp', date: '12 Oct 2025', amount: '$540.00', status: 'Paid' },
-            { id: 'INV-00127', client: 'Blue Ocean LLC', date: '10 Oct 2025', amount: '$1,240.00', status: 'Pending' },
-            { id: 'INV-00126', client: 'Skyline Builders', date: '08 Oct 2025', amount: '$820.00', status: 'Overdue' },
-        ];
+      // --- DATA ---
+      const invoices = [
+        { id: 'INV-00128', client: 'Acme Corp', date: '12 Oct 2025', amount: '$540.00', status: 'Paid' },
+        { id: 'INV-00127', client: 'Blue Ocean LLC', date: '10 Oct 2025', amount: '$1,240.00', status: 'Pending' },
+        { id: 'INV-00126', client: 'Skyline Builders', date: '08 Oct 2025', amount: '$820.00', status: 'Overdue' },
+      ];
 
-        // --- ELEMENTS ---
-        const tbody = document.getElementById('invoiceTableBody');
-        const userMenuButton = document.getElementById('user-menu-button');
-        const userMenu = document.getElementById('user-menu');
-        const searchInput = document.getElementById('invoice-search');
+      // --- ELEMENTS ---
+      const tbody = document.getElementById('invoiceTableBody');
+      const userMenuButton = document.getElementById('user-menu-button');
+      const userMenu = document.getElementById('user-menu');
+      const searchInput = document.getElementById('invoice-search');
 
-        // --- FUNCTIONS ---
-        const renderTable = (filteredInvoices) => {
-            tbody.innerHTML = '';
-            if (filteredInvoices.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-6 text-center text-slate-500">No invoices found.</td></tr>';
-                return;
-            }
+      // --- FUNCTIONS ---
+      const renderTable = (filteredInvoices) => {
+        tbody.innerHTML = '';
+        if (filteredInvoices.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-6 text-center text-slate-500">No invoices found.</td></tr>';
+          return;
+        }
 
-            filteredInvoices.forEach(inv => {
-                const variant = inv.status === 'Paid' ? 'paid' : inv.status === 'Pending' ? 'pending' : 'overdue';
-                const row = document.createElement('tr');
+        filteredInvoices.forEach(inv => {
+          const variant = inv.status === 'Paid' ? 'paid' : inv.status === 'Pending' ? 'pending' : 'overdue';
+          const row = document.createElement('tr');
 
-                const actionsHTML = `
-                    <button class="secondary-action px-3 py-1 text-xs" onclick="viewInvoice('${inv.id}')" title="View">
-                      <i class="fa-solid fa-eye"></i>
-                    </button>
-                    ${inv.status !== 'Paid' ? `<button class="secondary-action px-3 py-1 text-xs" onclick=\"resendInvoice('${inv.id}')\" title=\"Resend\"><i class=\"fa-solid fa-paper-plane\"></i></button>` : ''}
-                    <button class="secondary-action px-3 py-1 text-xs" onclick="downloadInvoice('${inv.id}')" title="Download">
-                      <i class="fa-solid fa-download"></i>
-                    </button>
-                `;
+          const actionsHTML = `
+            <button class="secondary-action px-3 py-1 text-xs" onclick="viewInvoice('${inv.id}')" title="View">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+            ${inv.status !== 'Paid' ? `<button class="secondary-action px-3 py-1 text-xs" onclick=\"resendInvoice('${inv.id}')\" title=\"Resend\"><i class=\"fa-solid fa-paper-plane\"></i></button>` : ''}
+            <button class="secondary-action px-3 py-1 text-xs" onclick="downloadInvoice('${inv.id}')" title="Download">
+              <i class="fa-solid fa-download"></i>
+            </button>
+          `;
 
-                row.innerHTML = `
-                    <td class="px-4 py-3 font-medium text-slate-100">${inv.id}</td>
-                    <td class="px-4 py-3 text-slate-300">${inv.client}</td>
-                    <td class="px-4 py-3 text-slate-400">${inv.date}</td>
-                    <td class="px-4 py-3 text-slate-100">${inv.amount}</td>
-                    <td class="px-4 py-3">
-                        <span class="status-pill" data-variant="${variant}">${inv.status}</span>
-                    </td>
-                    <td class="px-4 py-3 flex gap-2 items-center text-slate-300">${actionsHTML}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        };
-
-        // --- EVENT LISTENERS ---
-        // Toggle user menu
-        userMenuButton.addEventListener('click', () => {
-            userMenu.classList.toggle('hidden');
+          row.innerHTML = `
+            <td class="px-4 py-3 font-medium text-slate-100">${inv.id}</td>
+            <td class="px-4 py-3 text-slate-300">${inv.client}</td>
+            <td class="px-4 py-3 text-slate-400">${inv.date}</td>
+            <td class="px-4 py-3 text-slate-100">${inv.amount}</td>
+            <td class="px-4 py-3">
+              <span class="status-pill" data-variant="${variant}">${inv.status}</span>
+            </td>
+            <td class="px-4 py-3 flex gap-2 items-center text-slate-300">${actionsHTML}</td>
+          `;
+          tbody.appendChild(row);
         });
+      };
 
-        // Close user menu if clicking outside
-        document.addEventListener('click', (event) => {
-            if (!userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
-                userMenu.classList.add('hidden');
-            }
-        });
+      // --- EVENT LISTENERS ---
+      userMenuButton.addEventListener('click', () => {
+        userMenu.classList.toggle('hidden');
+      });
 
-        // Search functionality
-        searchInput.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            const filteredInvoices = invoices.filter(inv => 
-                inv.id.toLowerCase().includes(searchTerm) ||
-                inv.client.toLowerCase().includes(searchTerm) ||
-                inv.status.toLowerCase().includes(searchTerm)
-            );
-            renderTable(filteredInvoices);
-        });
+      document.addEventListener('click', (event) => {
+        if (!userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
+          userMenu.classList.add('hidden');
+        }
+      });
 
-        // --- INITIAL RENDER ---
-        renderTable(invoices);
+      searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const filteredInvoices = invoices.filter(inv =>
+          inv.id.toLowerCase().includes(searchTerm) ||
+          inv.client.toLowerCase().includes(searchTerm) ||
+          inv.status.toLowerCase().includes(searchTerm)
+        );
+        renderTable(filteredInvoices);
+      });
+
+      // --- INITIAL RENDER ---
+      renderTable(invoices);
     });
 
     // --- GLOBAL ACTION FUNCTIONS ---
@@ -214,21 +203,17 @@
     }
 
     function viewInvoice(id) {
-        alert(`Viewing Invoice: ${id}`);
-        // In a real app, you'd navigate: window.location.href = `invoice-details.html?id=${id}`;
+      alert(`Viewing Invoice: ${id}`);
     }
 
     function resendInvoice(id) {
-        alert(`Resending Invoice: ${id}`);
-        // In a real app, this would trigger an API call.
+      alert(`Resending Invoice: ${id}`);
     }
 
     function downloadInvoice(id) {
-        alert(`Downloading Invoice: ${id}`);
-        // In a real app, this would trigger a PDF generation and download.
+      alert(`Downloading Invoice: ${id}`);
     }
   </script>
 
 </body>
 </html>
-

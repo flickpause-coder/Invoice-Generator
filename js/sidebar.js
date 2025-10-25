@@ -2,7 +2,6 @@
   const SIDEBAR_URL = 'sidebar.html';
   const PLACEHOLDER_ID = 'main-sidebar';
   const HIGHLIGHT_CLASSES = ['active-link'];
-  const HIGHLIGHT_CLASSES = ['bg-indigo-50', 'text-indigo-700', 'font-semibold'];
 
   const state = {
     loaded: false,
@@ -118,22 +117,6 @@
             <span class="text-lg">↪</span>
             <span>Logout</span>
           </button>
-      <div data-sidebar-root class="w-64 bg-white shadow-md hidden md:flex flex-col">
-        <div class="px-6 py-4 border-b">
-          <a href="dashboard.html">
-            <h1 class="text-xl font-bold text-indigo-600">Invoice<span class="text-gray-900">Pro</span></h1>
-          </a>
-        </div>
-        <nav class="flex-1 px-4 py-6 space-y-2">
-          <a href="dashboard.html" data-nav="dashboard" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">🏠 Dashboard</a>
-          <a href="create-invoice.html" data-nav="create-invoice" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">🧾 Create Invoice</a>
-          <a href="invoices.html" data-nav="invoices" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">💼 Invoices</a>
-          <a href="clients.html" data-nav="clients" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">👤 Clients</a>
-          <a href="reports.html" data-nav="reports" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">📊 Reports</a>
-          <a href="settings.html" data-nav="settings" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">⚙️ Settings</a>
-        </nav>
-        <div class="p-4 border-t">
-          <button id="logout-button" class="logout-button w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition">Logout</button>
         </div>
       </div>
     `;

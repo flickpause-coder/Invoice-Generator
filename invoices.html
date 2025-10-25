@@ -16,8 +16,6 @@
 
   <!-- Sidebar -->
   <aside id="main-sidebar" data-active-nav="invoices" class="hidden md:flex w-[19.5rem] shrink-0" aria-label="Sidebar"></aside>
-    <!-- Sidebar -->
-    <aside id="main-sidebar" data-active-nav="invoices" class="w-64 bg-white shadow-md hidden md:flex flex-col"></aside>
 
   <!-- Main -->
   <main class="flex-1 flex flex-col">
@@ -122,36 +120,18 @@
     const invoiceTableBody = document.getElementById('invoiceTableBody');
     const selectAllCheckbox = document.getElementById('selectAll');
     const filterSelect = document.getElementById('filterSelect');
+    const searchInput = document.getElementById('globalSearch');
     const visibleCountEl = document.getElementById('visibleCount');
     const totalCountEl = document.getElementById('totalCount');
 
     function tryCall(fnName, ...args) {
       const fn = window[fnName];
       if (typeof fn === 'function') {
-        try { return fn(...args); } catch (e) { console.error(fnName, e); }
-      </section>
-    </main>
-  </div>
-
-  <!-- ======= Behavior script (calls your existing functions if they exist) ======= -->
-  <script src="js/sidebar.js"></script>
-
-  <script>
-    (function () {
-      // Helper selectors
-      const invoiceTableBody = document.getElementById('invoiceTableBody');
-      const selectAllCheckbox = document.getElementById('selectAll');
-      const filterSelect = document.getElementById('filterSelect');
-      const visibleCountEl = document.getElementById('visibleCount');
-      const totalCountEl = document.getElementById('totalCount');
-
-      // Try to use existing global functions if present
-      function tryCall(fnName, ...args) {
-        const fn = window[fnName];
-        if (typeof fn === 'function') {
-          try { return fn(...args); } catch (e) { console.error(fnName, e); }
+        try {
+          return fn(...args);
+        } catch (error) {
+          console.error(fnName, error);
         }
-        return undefined;
       }
       return undefined;
     }
@@ -164,7 +144,9 @@
 
     let invoices = [];
 
-    function fmt(n) { return '$' + Number(n || 0).toFixed(2); }
+    function fmt(n) {
+      return '$' + Number(n || 0).toFixed(2);
+    }
 
     function statusBadge(status) {
       const variant = status === 'Paid' ? 'paid' : status === 'Pending' ? 'pending' : 'overdue';
@@ -201,8 +183,8 @@
       `;
       tr.querySelector('.viewBtn')?.addEventListener('click', () => viewInvoice(inv.id));
       tr.querySelector('.resendBtn')?.addEventListener('click', () => resendInvoice(inv.id));
-      tr.querySelector('.recurringBtn')?.addEventListener('click', (e) => toggleRecurring(inv.id, e.target));
-      tr.querySelector('.menuBtn')?.addEventListener('click', (e) => toggleMenu(e.target));
+      tr.querySelector('.recurringBtn')?.addEventListener('click', (event) => toggleRecurring(inv.id, event.target));
+      tr.querySelector('.menuBtn')?.addEventListener('click', (event) => toggleMenu(event.target));
       tr.querySelector('.actionDownload')?.addEventListener('click', () => downloadInvoice(inv.id));
       tr.querySelector('.actionDelete')?.addEventListener('click', () => deleteInvoice(inv.id));
       tr.querySelector('.actionView')?.addEventListener('click', () => viewInvoice(inv.id));
@@ -211,15 +193,15 @@
 
     function renderInvoices(list) {
       invoiceTableBody.innerHTML = '';
-      list.forEach(inv => invoiceTableBody.appendChild(buildRow(inv)));
+      list.forEach((inv) => invoiceTableBody.appendChild(buildRow(inv)));
       visibleCountEl.textContent = list.length;
     }
 
     function updateSummary(list) {
       const total = list.length;
-      const pending = list.filter(inv => inv.status === 'Pending').length;
-      const overdue = list.filter(inv => inv.status === 'Overdue').length;
-      const paid = list.filter(inv => inv.status === 'Paid').length;
+      const pending = list.filter((inv) => inv.status === 'Pending').length;
+      const overdue = list.filter((inv) => inv.status === 'Overdue').length;
+      const paid = list.filter((inv) => inv.status === 'Paid').length;
       document.getElementById('cardTotal').textContent = total;
       document.getElementById('cardPending').textContent = pending;
       document.getElementById('cardOverdue').textContent = overdue;
@@ -227,22 +209,37 @@
       totalCountEl.textContent = invoices.length;
     }
 
+    function matchesQuery(inv, query) {
+      if (!query) return true;
+      const normalized = query.toLowerCase();
+      return [
+        inv.id,
+        inv.client,
+        inv.status,
+        inv.date,
+        inv.due,
+        String(inv.amount)
+      ].some((field) => String(field).toLowerCase().includes(normalized));
+    }
+
     function applyFilter() {
       const value = filterSelect.value;
+      const query = searchInput ? searchInput.value.trim() : '';
       let list = invoices.slice();
       if (value !== 'all') {
         if (value === 'recurring') {
-          list = list.filter(inv => inv.recurring);
+          list = list.filter((inv) => inv.recurring);
         } else {
-          list = list.filter(inv => inv.status.toLowerCase() === value);
+          list = list.filter((inv) => inv.status.toLowerCase() === value);
         }
       }
+      list = list.filter((inv) => matchesQuery(inv, query));
       renderInvoices(list);
       updateSummary(list);
     }
 
     function toggleRecurring(id, button) {
-      const invoice = invoices.find(inv => inv.id === id);
+      const invoice = invoices.find((inv) => inv.id === id);
       if (!invoice) return;
       invoice.recurring = !invoice.recurring;
       button.textContent = invoice.recurring ? 'Recurring' : 'One-off';
@@ -251,7 +248,7 @@
 
     function toggleMenu(button) {
       const menu = button.nextElementSibling;
-      document.querySelectorAll('#invoiceTableBody .menu').forEach(el => {
+      document.querySelectorAll('#invoiceTableBody .menu').forEach((el) => {
         if (el !== menu) el.classList.add('hidden');
       });
       menu?.classList.toggle('hidden');
@@ -274,7 +271,7 @@
 
     function deleteInvoice(id) {
       if (confirm(`Delete invoice ${id}?`)) {
-        invoices = invoices.filter(inv => inv.id !== id);
+        invoices = invoices.filter((inv) => inv.id !== id);
         applyFilter();
         tryCall('deleteInvoice', id);
       }
@@ -282,30 +279,31 @@
 
     selectAllCheckbox.addEventListener('change', (event) => {
       const checked = event.target.checked;
-      invoiceTableBody.querySelectorAll('.row-checkbox').forEach(cb => {
-        cb.checked = checked;
+      invoiceTableBody.querySelectorAll('.row-checkbox').forEach((checkbox) => {
+        checkbox.checked = checked;
       });
     });
 
     invoiceTableBody.addEventListener('change', () => {
       const checkboxes = invoiceTableBody.querySelectorAll('.row-checkbox');
-      const allChecked = checkboxes.length && Array.from(checkboxes).every(cb => cb.checked);
+      const allChecked = checkboxes.length && Array.from(checkboxes).every((cb) => cb.checked);
       selectAllCheckbox.checked = allChecked;
     });
 
     document.addEventListener('click', (event) => {
       if (!event.target.closest('.menuBtn')) {
-        document.querySelectorAll('#invoiceTableBody .menu').forEach(menu => menu.classList.add('hidden'));
+        document.querySelectorAll('#invoiceTableBody .menu').forEach((menu) => menu.classList.add('hidden'));
       }
     });
 
     filterSelect.addEventListener('change', applyFilter);
+    searchInput?.addEventListener('input', applyFilter);
 
     invoices = sampleInvoices.slice();
     totalCountEl.textContent = invoices.length;
     applyFilter();
 
-    document.querySelectorAll('button[data-filter]').forEach(button => {
+    document.querySelectorAll('button[data-filter]').forEach((button) => {
       button.addEventListener('click', () => {
         filterSelect.value = button.dataset.filter;
         applyFilter();
@@ -320,4 +318,3 @@
 
 </body>
 </html>
-

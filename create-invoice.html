@@ -14,14 +14,7 @@
 
   <div class="flex min-h-screen">
 
-    <aside id="main-sidebar" data-active-nav="create-invoice" class="hidden md:flex w-[19.5rem] shrink-0" aria-label="Sidebar">
-    </aside>
-<body class="bg-slate-50 text-slate-900">
-
-  <div class="flex min-h-screen">
-
-    <aside id="main-sidebar" data-active-nav="create-invoice" class="w-64 bg-white shadow-md hidden md:flex flex-col">
-      </aside>
+    <aside id="main-sidebar" data-active-nav="create-invoice" class="hidden md:flex w-[19.5rem] shrink-0" aria-label="Sidebar"></aside>
 
     <main class="flex-1 flex flex-col">
 
@@ -40,117 +33,117 @@
         <div class="max-w-7xl mx-auto px-6 py-10">
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-        <div class="lg:col-span-2 space-y-6">
+            <div class="lg:col-span-2 space-y-6">
 
-          <div class="surface-card p-6 space-y-6">
-            <div class="flex flex-wrap items-center justify-between gap-3">
-              <h3 class="section-heading">Invoice Details</h3>
-              <div class="flex flex-wrap gap-3">
-                <button id="saveDraftBtn" class="secondary-action px-5">Save Draft</button>
-                <button id="sendBtn" class="primary-action px-6">Send Invoice</button>
-              </div>
-            </div>
+              <div class="surface-card p-6 space-y-6">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                  <h3 class="section-heading">Invoice Details</h3>
+                  <div class="flex flex-wrap gap-3">
+                    <button id="saveDraftBtn" class="secondary-action px-5">Save Draft</button>
+                    <button id="sendBtn" class="primary-action px-6">Send Invoice</button>
+                  </div>
+                </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div class="space-y-2">
-                <label class="muted-label">Client</label>
-                <select id="clientSelect" class="w-full">
-                  <option value="">— Select client —</option>
-                </select>
-                <div class="flex gap-3">
-                  <input id="clientSearch" type="text" placeholder="Search / Add client..." class="flex-1" />
-                  <button id="addClientBtn" class="secondary-action px-4">+ Client</button>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div class="space-y-2">
+                    <label class="muted-label">Client</label>
+                    <select id="clientSelect" class="w-full">
+                      <option value="">— Select client —</option>
+                    </select>
+                    <div class="flex gap-3">
+                      <input id="clientSearch" type="text" placeholder="Search / Add client..." class="flex-1" />
+                      <button id="addClientBtn" class="secondary-action px-4">+ Client</button>
+                    </div>
+                  </div>
+
+                  <div class="space-y-2">
+                    <label class="muted-label">Invoice #</label>
+                    <input id="invoiceNumber" type="text" class="w-full" value="#INV-0001" />
+                  </div>
+
+                  <div class="space-y-2">
+                    <label class="muted-label">Invoice Date</label>
+                    <input id="invoiceDate" type="date" class="w-full" />
+                  </div>
+
+                  <div class="space-y-2">
+                    <label class="muted-label">Due Date</label>
+                    <input id="dueDate" type="date" class="w-full" />
+                  </div>
                 </div>
               </div>
 
-              <div class="space-y-2">
-                <label class="muted-label">Invoice #</label>
-                <input id="invoiceNumber" type="text" class="w-full" value="#INV-0001" />
+              <div class="surface-card p-6 space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                  <h3 class="section-heading">Line Items</h3>
+                  <div class="text-sm text-slate-400">Tip: press <kbd class="px-2 py-1 rounded-lg bg-white/10 text-xs">Tab</kbd> to move across fields</div>
+                </div>
+
+                <div class="overflow-x-auto glass-scroll">
+                  <table id="itemsTable" class="modern-table text-sm">
+                    <thead>
+                      <tr>
+                        <th class="text-left">Description</th>
+                        <th class="text-center w-24">Qty</th>
+                        <th class="text-center w-32">Unit</th>
+                        <th class="text-right w-32">Price</th>
+                        <th class="text-right w-32">Line Total</th>
+                        <th class="text-center w-12"></th>
+                      </tr>
+                    </thead>
+                    <tbody id="itemRows" class="divide-y divide-white/5">
+                      <tr class="item-row">
+                        <td class="px-4 py-3"><input class="desc w-full" placeholder="Item description" /></td>
+                        <td class="px-4 py-3 text-center"><input type="number" class="qty w-full" value="1" min="0" /></td>
+                        <td class="px-4 py-3 text-center"><input class="unit w-full" placeholder="pcs/hr" /></td>
+                        <td class="px-4 py-3 text-right"><input type="number" step="0.01" class="price w-full text-right" value="0" min="0" /></td>
+                        <td class="px-4 py-3 text-right text-slate-200 total">$0.00</td>
+                        <td class="px-4 py-3 text-center"><button class="removeRow text-rose-400 hover:text-rose-200" type="button">✖</button></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="flex justify-end">
+                  <button id="addItemBtn" class="primary-action">+ Add Item</button>
+                </div>
               </div>
 
-              <div class="space-y-2">
-                <label class="muted-label">Invoice Date</label>
-                <input id="invoiceDate" type="date" class="w-full" />
+              <div class="surface-card p-6 space-y-4">
+                <h3 class="section-heading">Notes &amp; Terms</h3>
+                <textarea id="notes" class="w-full h-32" placeholder="Notes visible on PDF"></textarea>
               </div>
 
-              <div class="space-y-2">
-                <label class="muted-label">Due Date</label>
-                <input id="dueDate" type="date" class="w-full" />
+            </div>
+
+            <div class="space-y-6">
+
+              <div class="surface-card p-6 space-y-4">
+                <h3 class="section-heading">Summary</h3>
+                <div class="space-y-3 text-sm">
+                  <div class="summary-line"><span>Subtotal</span><strong id="subtotal">$0.00</strong></div>
+                  <div class="summary-line"><span>Discount</span><strong id="discount">$0.00</strong></div>
+                  <div class="summary-line"><span>Tax</span><strong id="tax">$0.00</strong></div>
+                  <hr class="border-slate-700/40">
+                  <div class="summary-line text-lg font-semibold"><span>Total</span><strong id="grandTotal">$0.00</strong></div>
+                </div>
               </div>
+
+              <div class="surface-card p-6 space-y-4">
+                <h3 class="section-heading">Actions</h3>
+                <div class="space-y-3">
+                  <button id="previewPdfBtn" class="secondary-action w-full">Preview PDF</button>
+                  <button id="downloadBtn" class="primary-action w-full">Download</button>
+                </div>
+              </div>
+
+              <div class="surface-card p-6 space-y-4">
+                <h3 class="section-heading">Your Company</h3>
+                <textarea class="w-full h-32" placeholder="Company details (address, etc.)"></textarea>
+              </div>
+
             </div>
           </div>
-
-          <div class="surface-card p-6 space-y-4">
-            <div class="flex flex-wrap items-center justify-between gap-3">
-              <h3 class="section-heading">Line Items</h3>
-              <div class="text-sm text-slate-400">Tip: press <kbd class="px-2 py-1 rounded-lg bg-white/10 text-xs">Tab</kbd> to move across fields</div>
-            </div>
-
-            <div class="overflow-x-auto glass-scroll">
-              <table id="itemsTable" class="modern-table text-sm">
-                <thead>
-                  <tr>
-                    <th class="text-left">Description</th>
-                    <th class="text-center w-24">Qty</th>
-                    <th class="text-center w-32">Unit</th>
-                    <th class="text-right w-32">Price</th>
-                    <th class="text-right w-32">Line Total</th>
-                    <th class="text-center w-12"></th>
-                  </tr>
-                </thead>
-                <tbody id="itemRows" class="divide-y divide-white/5">
-                  <tr class="item-row">
-                    <td class="px-4 py-3"><input class="desc w-full" placeholder="Item description" /></td>
-                    <td class="px-4 py-3 text-center"><input type="number" class="qty w-full" value="1" min="0" /></td>
-                    <td class="px-4 py-3 text-center"><input class="unit w-full" placeholder="pcs/hr" /></td>
-                    <td class="px-4 py-3 text-right"><input type="number" step="0.01" class="price w-full text-right" value="0" min="0" /></td>
-                    <td class="px-4 py-3 text-right text-slate-200 total">$0.00</td>
-                    <td class="px-4 py-3 text-center"><button class="removeRow text-rose-400 hover:text-rose-200" type="button">✖</button></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="flex justify-end">
-              <button id="addItemBtn" class="primary-action">+ Add Item</button>
-            </div>
-          </div>
-
-          <div class="surface-card p-6 space-y-4">
-            <h3 class="section-heading">Notes &amp; Terms</h3>
-            <textarea id="notes" class="w-full h-32" placeholder="Notes visible on PDF"></textarea>
-          </div>
-
         </div>
-
-        <div class="space-y-6">
-
-          <div class="surface-card p-6 space-y-4">
-            <h3 class="section-heading">Summary</h3>
-            <div class="space-y-3 text-sm">
-              <div class="summary-line"><span>Subtotal</span><strong id="subtotal">$0.00</strong></div>
-              <div class="summary-line"><span>Discount</span><strong id="discount">$0.00</strong></div>
-              <div class="summary-line"><span>Tax</span><strong id="tax">$0.00</strong></div>
-              <hr class="border-slate-700/40">
-              <div class="summary-line text-lg font-semibold"><span>Total</span><strong id="grandTotal">$0.00</strong></div>
-            </div>
-          </div>
-
-          <div class="surface-card p-6 space-y-4">
-            <h3 class="section-heading">Actions</h3>
-            <div class="space-y-3">
-              <button id="previewPdfBtn" class="secondary-action w-full">Preview PDF</button>
-              <button id="downloadBtn" class="primary-action w-full">Download</button>
-            </div>
-          </div>
-
-          <div class="surface-card p-6 space-y-4">
-            <h3 class="section-heading">Your Company</h3>
-            <textarea class="w-full h-32" placeholder="Company details (address, etc.)"></textarea>
-          </div>
-
-        </div>
-      </div>
-    </div>
       </section>
     </main>
   </div>
@@ -260,4 +253,3 @@
 
 </body>
 </html>
-
