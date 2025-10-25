@@ -19,7 +19,7 @@
 
 <div class="flex min-h-screen">
 
-  <aside id="main-sidebar" class="w-64 bg-white shadow-md hidden md:flex flex-col">
+  <aside id="main-sidebar" data-active-nav="reports" class="w-64 bg-white shadow-md hidden md:flex flex-col">
     </aside>
 
   <main class="flex-1 flex flex-col">
@@ -119,6 +119,8 @@
   </main>
 </div>
 
+<script src="js/sidebar.js"></script>
+
 <script>
   // Compact, clean charts
   const ctxRevenue = document.getElementById('revenueChart').getContext('2d');
@@ -166,37 +168,6 @@
     }
   });
 
-  // --- REVISED DYNAMIC SIDEBAR LOADER ---
-  document.addEventListener('DOMContentLoaded', function() {
-    fetch('sidebar.html')
-      .then(response => response.text())
-      .then(html => {
-        const sidebarPlaceholder = document.getElementById('main-sidebar');
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = html;
-        const sidebarContent = tempDiv.querySelector('div.w-64');
-        const sidebarScript = tempDiv.querySelector('script');
-        
-        if (sidebarContent) {
-          sidebarPlaceholder.innerHTML = sidebarContent.innerHTML;
-        }
-
-        if (sidebarScript) {
-          const scriptContent = `
-            const path = window.location.pathname.split('/').pop().split('.')[0] || 'reports';
-            const navItem = document.querySelector('#main-sidebar [data-nav="' + path + '"]');
-            if (navItem) {
-              navItem.classList.add('bg-indigo-50', 'text-indigo-700', 'font-semibold');
-              navItem.classList.remove('hover:bg-gray-100');
-            }
-          `;
-          const newScript = document.createElement('script');
-          newScript.textContent = scriptContent;
-          document.body.appendChild(newScript);
-        }
-      })
-      .catch(e => console.error('Sidebar load failed:', e));
-  });
 </script>
 
 </body>
