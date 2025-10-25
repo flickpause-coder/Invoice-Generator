@@ -64,7 +64,7 @@
 
   function buildFallbackMarkup() {
     return `
-      <div data-sidebar-root class="sidebar-shell hidden md:flex w-full max-w-[19.5rem] flex-col min-h-screen text-slate-100">
+      <div data-sidebar-root class="sidebar-shell flex w-full max-w-[19.5rem] flex-col min-h-screen text-slate-100">
         <div class="sidebar-brand">
           <a href="dashboard.html" class="flex items-center gap-4">
             <span class="sidebar-brand-badge">
