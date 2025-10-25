@@ -82,7 +82,7 @@
             </span>
           </a>
         </div>
-        <nav class="flex-1 px-4 py-6 space-y-1">
+        <nav class="flex-1 px-4 py-6 space-y-1" aria-label="Primary navigation">
           <a href="dashboard.html" data-nav="dashboard" class="group flex items-center gap-3 rounded-xl px-4 py-2 text-sm font-medium text-slate-600 transition-all hover:bg-indigo-50 hover:text-indigo-600">
             <span class="text-xl leading-none">🏠</span>
             <span class="transition-transform duration-200 group-hover:translate-x-0.5">Dashboard</span>
@@ -109,7 +109,7 @@
           </a>
         </nav>
         <div class="mt-auto px-6 pt-6 pb-8 border-t border-slate-100">
-          <button id="logout-button" class="logout-button inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600">
+          <button type="button" id="logout-button" class="logout-button inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600">
             <span class="text-base">↪</span>
             <span>Logout</span>
           </button>
