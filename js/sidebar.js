@@ -1,13 +1,7 @@
 (function () {
   const SIDEBAR_URL = 'sidebar.html';
   const PLACEHOLDER_ID = 'main-sidebar';
-  const HIGHLIGHT_CLASSES = [
-    'bg-indigo-100',
-    'text-indigo-700',
-    'shadow-sm',
-    'ring-1',
-    'ring-indigo-200',
-  ];
+  const HIGHLIGHT_CLASSES = ['bg-indigo-50', 'text-indigo-700', 'font-semibold'];
 
   const state = {
     loaded: false,
@@ -53,66 +47,33 @@
   }
 
   function highlightActiveLink(root, navKey) {
-    const links = root.querySelectorAll('[data-nav]');
-    links.forEach((link) => {
-      HIGHLIGHT_CLASSES.forEach((cls) => link.classList.remove(cls));
-      link.removeAttribute('aria-current');
-    });
-
     const activeLink = root.querySelector(`[data-nav="${navKey}"]`) || root.querySelector(`a[href$="${navKey}.html"]`);
     if (!activeLink) {
       return;
     }
 
     HIGHLIGHT_CLASSES.forEach((cls) => activeLink.classList.add(cls));
-    activeLink.setAttribute('aria-current', 'page');
+    activeLink.classList.remove('hover:bg-gray-100');
   }
 
   function buildFallbackMarkup() {
     return `
-      <div data-sidebar-root class="hidden md:flex w-full max-w-[18.5rem] flex-col min-h-screen bg-gradient-to-b from-white via-indigo-50 to-white text-slate-700 border-r border-slate-200 shadow-sm">
-        <div class="px-6 pt-10 pb-8 border-b border-slate-100">
-          <a href="dashboard.html" class="flex items-center gap-3">
-            <span class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-sky-500 text-white text-xl font-black tracking-tight shadow-lg shadow-indigo-300/50 ring-4 ring-white">
-              IP
-            </span>
-            <span class="flex flex-col leading-tight">
-              <span class="text-lg font-semibold text-slate-900">InvoicePro</span>
-              <span class="text-xs uppercase tracking-[0.3em] text-slate-400">Workspace</span>
-            </span>
+      <div data-sidebar-root class="w-64 bg-white shadow-md hidden md:flex flex-col">
+        <div class="px-6 py-4 border-b">
+          <a href="dashboard.html">
+            <h1 class="text-xl font-bold text-indigo-600">Invoice<span class="text-gray-900">Pro</span></h1>
           </a>
         </div>
-        <nav class="flex-1 px-4 py-6 space-y-1" aria-label="Primary navigation">
-          <a href="dashboard.html" data-nav="dashboard" class="group flex items-center gap-3 rounded-xl px-4 py-2 text-sm font-medium text-slate-600 transition-all hover:bg-indigo-100 hover:text-indigo-700">
-            <span class="text-xl leading-none">🏠</span>
-            <span class="transition-transform duration-200 group-hover:translate-x-0.5">Dashboard</span>
-          </a>
-          <a href="create-invoice.html" data-nav="create-invoice" class="group flex items-center gap-3 rounded-xl px-4 py-2 text-sm font-medium text-slate-600 transition-all hover:bg-indigo-100 hover:text-indigo-700">
-            <span class="text-xl leading-none">🧾</span>
-            <span class="transition-transform duration-200 group-hover:translate-x-0.5">Create Invoice</span>
-          </a>
-          <a href="invoices.html" data-nav="invoices" class="group flex items-center gap-3 rounded-xl px-4 py-2 text-sm font-medium text-slate-600 transition-all hover:bg-indigo-100 hover:text-indigo-700">
-            <span class="text-xl leading-none">💼</span>
-            <span class="transition-transform duration-200 group-hover:translate-x-0.5">Invoices</span>
-          </a>
-          <a href="clients.html" data-nav="clients" class="group flex items-center gap-3 rounded-xl px-4 py-2 text-sm font-medium text-slate-600 transition-all hover:bg-indigo-100 hover:text-indigo-700">
-            <span class="text-xl leading-none">👤</span>
-            <span class="transition-transform duration-200 group-hover:translate-x-0.5">Clients</span>
-          </a>
-          <a href="reports.html" data-nav="reports" class="group flex items-center gap-3 rounded-xl px-4 py-2 text-sm font-medium text-slate-600 transition-all hover:bg-indigo-100 hover:text-indigo-700">
-            <span class="text-xl leading-none">📊</span>
-            <span class="transition-transform duration-200 group-hover:translate-x-0.5">Reports</span>
-          </a>
-          <a href="settings.html" data-nav="settings" class="group flex items-center gap-3 rounded-xl px-4 py-2 text-sm font-medium text-slate-600 transition-all hover:bg-indigo-100 hover:text-indigo-700">
-            <span class="text-xl leading-none">⚙️</span>
-            <span class="transition-transform duration-200 group-hover:translate-x-0.5">Settings</span>
-          </a>
+        <nav class="flex-1 px-4 py-6 space-y-2">
+          <a href="dashboard.html" data-nav="dashboard" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">🏠 Dashboard</a>
+          <a href="create-invoice.html" data-nav="create-invoice" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">🧾 Create Invoice</a>
+          <a href="invoices.html" data-nav="invoices" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">💼 Invoices</a>
+          <a href="clients.html" data-nav="clients" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">👤 Clients</a>
+          <a href="reports.html" data-nav="reports" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">📊 Reports</a>
+          <a href="settings.html" data-nav="settings" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">⚙️ Settings</a>
         </nav>
-        <div class="mt-auto px-6 pt-6 pb-8 border-t border-slate-100">
-          <button type="button" id="logout-button" class="logout-button inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-100 hover:text-indigo-700">
-            <span class="text-base">↪</span>
-            <span>Logout</span>
-          </button>
+        <div class="p-4 border-t">
+          <button id="logout-button" class="logout-button w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition">Logout</button>
         </div>
       </div>
     `;
@@ -188,3 +149,4 @@
     isLoaded: () => state.loaded,
   });
 })();
+

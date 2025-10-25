@@ -1,14 +1,8 @@
 <!-- sidebar.html -->
-<div data-sidebar-root class="hidden md:flex w-full max-w-[18.5rem] flex-col min-h-screen bg-gradient-to-b from-white via-indigo-50 to-white text-slate-700 border-r border-slate-200 shadow-sm">
-  <div class="px-6 pt-10 pb-8 border-b border-slate-100">
-    <a href="dashboard.html" class="flex items-center gap-3">
-      <span class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-sky-500 text-white text-xl font-black tracking-tight shadow-lg shadow-indigo-300/50 ring-4 ring-white">
-        IP
-      </span>
-      <span class="flex flex-col leading-tight">
-        <span class="text-lg font-semibold text-slate-900">InvoicePro</span>
-        <span class="text-xs uppercase tracking-[0.3em] text-slate-400">Workspace</span>
-      </span>
+<div data-sidebar-root class="w-64 bg-white shadow-md hidden md:flex flex-col">
+  <div class="px-6 py-4 border-b">
+    <a href="dashboard.html">
+      <h1 class="text-xl font-bold text-indigo-600">Invoice<span class="text-gray-900">Pro</span></h1>
     </a>
   </div>
   <nav class="flex-1 px-4 py-6 space-y-1" aria-label="Primary navigation">
@@ -37,10 +31,8 @@
       <span class="transition-transform duration-200 group-hover:translate-x-0.5">Settings</span>
     </a>
   </nav>
-  <div class="mt-auto px-6 pt-6 pb-8 border-t border-slate-100">
-    <button type="button" id="logout-button" class="logout-button inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-100 hover:text-indigo-700">
-      <span class="text-base">↪</span>
-      <span>Logout</span>
-    </button>
+  <div class="p-4 border-t">
+    <button id="logout-button" class="logout-button w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition">Logout</button>
   </div>
 </div>
+
