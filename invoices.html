@@ -16,6 +16,8 @@
 
   <!-- Sidebar -->
   <aside id="main-sidebar" data-active-nav="invoices" class="hidden md:flex w-[19.5rem] shrink-0" aria-label="Sidebar"></aside>
+    <!-- Sidebar -->
+    <aside id="main-sidebar" data-active-nav="invoices" class="w-64 bg-white shadow-md hidden md:flex flex-col"></aside>
 
   <!-- Main -->
   <main class="flex-1 flex flex-col">
@@ -127,6 +129,29 @@
       const fn = window[fnName];
       if (typeof fn === 'function') {
         try { return fn(...args); } catch (e) { console.error(fnName, e); }
+      </section>
+    </main>
+  </div>
+
+  <!-- ======= Behavior script (calls your existing functions if they exist) ======= -->
+  <script src="js/sidebar.js"></script>
+
+  <script>
+    (function () {
+      // Helper selectors
+      const invoiceTableBody = document.getElementById('invoiceTableBody');
+      const selectAllCheckbox = document.getElementById('selectAll');
+      const filterSelect = document.getElementById('filterSelect');
+      const visibleCountEl = document.getElementById('visibleCount');
+      const totalCountEl = document.getElementById('totalCount');
+
+      // Try to use existing global functions if present
+      function tryCall(fnName, ...args) {
+        const fn = window[fnName];
+        if (typeof fn === 'function') {
+          try { return fn(...args); } catch (e) { console.error(fnName, e); }
+        }
+        return undefined;
       }
       return undefined;
     }
@@ -295,3 +320,4 @@
 
 </body>
 </html>
+
