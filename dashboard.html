@@ -21,38 +21,7 @@
   <div class="flex min-h-screen">
 
     <!-- Sidebar -->
-    <aside class="w-64 bg-white shadow-md hidden md:flex flex-col">
-      <div class="px-6 py-4 border-b">
-        <!-- Made logo clickable -->
-        <a href="dashboard.html">
-          <h1 class="text-xl font-bold text-indigo-600">Invoice<span class="text-gray-900">Pro</span></h1>
-        </a>
-      </div>
-      <nav class="flex-1 px-4 py-6 space-y-2">
-        <a href="dashboard.html" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-indigo-50 text-indigo-700 font-semibold">
-          🏠 Dashboard
-        </a>
-        <a href="create-invoice.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">
-          🧾 Create Invoice
-        </a>
-        <a href="invoices.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">
-          💼 Invoices
-        </a>
-        <a href="clients.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">
-          👤 Clients
-        </a>
-        <a href="reports.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">
-          📊 Reports
-        </a>
-        <a href="settings.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">
-          ⚙️ Settings
-        </a>
-      </nav>
-      <div class="p-4 border-t">
-        <!-- Added ID for logout functionality -->
-        <button id="logout-button" class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition">Logout</button>
-      </div>
-    </aside>
+    <aside id="main-sidebar" data-active-nav="dashboard" class="hidden md:flex w-[18.5rem] shrink-0"></aside>
 
     <!-- Main content -->
     <main class="flex-1 flex flex-col">
@@ -75,7 +44,7 @@
               <hr class="my-1">
               <a href="settings.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">User Details</a>
               <a href="subscription.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Subscription</a>
-              <a href="#" id="logout-link" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
+              <a href="#" id="logout-link" class="logout-button block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
             </div>
           </div>
         </div>
@@ -141,6 +110,8 @@
     </main>
   </div>
 
+  <script src="js/sidebar.js"></script>
+
   <!-- Functional Scripts -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -155,8 +126,6 @@
         const tbody = document.getElementById('invoiceTableBody');
         const userMenuButton = document.getElementById('user-menu-button');
         const userMenu = document.getElementById('user-menu');
-        const logoutButton = document.getElementById('logout-button');
-        const logoutLink = document.getElementById('logout-link');
         const searchInput = document.getElementById('invoice-search');
 
         // --- FUNCTIONS ---
@@ -191,13 +160,6 @@
             });
         };
 
-        const handleLogout = () => {
-            if (confirm('Are you sure you want to log out?')) {
-                alert('Logging out...');
-                window.location.href = 'login.html'; // Redirect to login page
-            }
-        };
-
         // --- EVENT LISTENERS ---
         // Toggle user menu
         userMenuButton.addEventListener('click', () => {
@@ -209,13 +171,6 @@
             if (!userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
                 userMenu.classList.add('hidden');
             }
-        });
-
-        // Logout functionality
-        logoutButton.addEventListener('click', handleLogout);
-        logoutLink.addEventListener('click', (e) => {
-          e.preventDefault();
-          handleLogout();
         });
 
         // Search functionality

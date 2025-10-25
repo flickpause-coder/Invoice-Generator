@@ -14,23 +14,8 @@
 
   <div class="flex min-h-screen">
 
-    <!-- Sidebar (matches Dashboard/Create Invoice) -->
-    <aside class="w-64 bg-white shadow-md hidden md:flex flex-col">
-      <div class="px-6 py-4 border-b">
-        <h1 class="text-xl font-bold text-indigo-600">Invoice<span class="text-gray-900">Pro</span></h1>
-      </div>
-      <nav class="flex-1 px-4 py-6 space-y-2">
-        <a href="dashboard.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">🏠 Dashboard</a>
-        <a href="create-invoice.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">🧾 Create Invoice</a>
-        <a href="invoices.html" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-indigo-50 text-indigo-700 font-semibold">💼 Invoices</a>
-        <a href="clients.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">👤 Clients</a>
-        <a href="reports.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">📊 Reports</a>
-        <a href="settings.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100">⚙️ Settings</a>
-      </nav>
-      <div class="p-4 border-t">
-        <button class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition">Logout</button>
-      </div>
-    </aside>
+    <!-- Sidebar -->
+    <aside id="main-sidebar" data-active-nav="invoices" class="hidden md:flex w-[18.5rem] shrink-0"></aside>
 
     <!-- Main -->
     <main class="flex-1 flex flex-col">
@@ -129,6 +114,8 @@
   </div>
 
   <!-- ======= Behavior script (calls your existing functions if they exist) ======= -->
+  <script src="js/sidebar.js"></script>
+
   <script>
     (function () {
       // Helper selectors
@@ -372,3 +359,4 @@
   -->
 </body>
 </html>
+
