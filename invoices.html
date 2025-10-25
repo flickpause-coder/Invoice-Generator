@@ -219,7 +219,7 @@
         inv.date,
         inv.due,
         String(inv.amount)
-      ].some((field) => String(field).toLowerCase().includes(normalized));
+      ].some(field => String(field).toLowerCase().includes(normalized));
     }
 
     function applyFilter() {
@@ -233,7 +233,7 @@
           list = list.filter((inv) => inv.status.toLowerCase() === value);
         }
       }
-      list = list.filter((inv) => matchesQuery(inv, query));
+      list = list.filter(inv => matchesQuery(inv, query));
       renderInvoices(list);
       updateSummary(list);
     }
