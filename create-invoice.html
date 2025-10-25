@@ -7,8 +7,15 @@
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/modern-ui.css">
   <style> body { font-family: 'Inter', sans-serif; } </style>
 </head>
+<body data-modern-ui class="antialiased">
+
+  <div class="flex min-h-screen">
+
+    <aside id="main-sidebar" data-active-nav="create-invoice" class="hidden md:flex w-[19.5rem] shrink-0" aria-label="Sidebar">
+    </aside>
 <body class="bg-slate-50 text-slate-900">
 
   <div class="flex min-h-screen">
@@ -18,124 +25,132 @@
 
     <main class="flex-1 flex flex-col">
 
-      <header class="flex items-center justify-between bg-white shadow px-6 py-4 sticky top-0 z-10">
-        <h2 class="text-2xl font-semibold">Create Invoice</h2>
+      <header class="modern-topbar flex items-center justify-between px-8 py-5 sticky top-0 z-20">
+        <div>
+          <p class="modern-breadcrumb">Billing</p>
+          <h2 class="text-3xl font-semibold leading-tight mt-1">Create Invoice</h2>
+        </div>
         <div class="flex items-center gap-4">
-          <input id="globalSearch" type="text" placeholder="Search..." class="px-3 py-2 border rounded-lg focus:ring focus:ring-indigo-200" />
-          <div class="w-10 h-10 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-800 font-bold">R</div>
+          <input id="globalSearch" type="text" placeholder="Search..." class="modern-input w-64" />
+          <div class="w-11 h-11 rounded-full bg-gradient-to-br from-sky-400/80 via-indigo-500/80 to-purple-500/80 flex items-center justify-center text-white font-semibold shadow-lg shadow-sky-500/40">R</div>
         </div>
       </header>
 
-      <section class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <section class="flex-1 overflow-y-auto">
+        <div class="max-w-7xl mx-auto px-6 py-10">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
         <div class="lg:col-span-2 space-y-6">
 
-          <div class="bg-white rounded-2xl shadow p-6">
-            <div class="flex items-start justify-between">
-              <h3 class="text-lg font-semibold">Invoice Details</h3>
-              <div class="space-x-2">
-                <button id="saveDraftBtn" class="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">Save Draft</button>
-                <button id="sendBtn" class="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">Send</button>
+          <div class="surface-card p-6 space-y-6">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <h3 class="section-heading">Invoice Details</h3>
+              <div class="flex flex-wrap gap-3">
+                <button id="saveDraftBtn" class="secondary-action px-5">Save Draft</button>
+                <button id="sendBtn" class="primary-action px-6">Send Invoice</button>
               </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <div>
-                <label class="text-sm font-medium text-gray-600">Client</label>
-                <select id="clientSelect" class="mt-1 w-full border rounded-lg px-3 py-2">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div class="space-y-2">
+                <label class="muted-label">Client</label>
+                <select id="clientSelect" class="w-full">
                   <option value="">— Select client —</option>
                 </select>
-                <div class="mt-2 flex gap-2">
-                  <input id="clientSearch" type="text" placeholder="Search / Add client..." class="flex-1 border rounded-lg px-3 py-2" />
-                  <button id="addClientBtn" class="px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">+ Client</button>
+                <div class="flex gap-3">
+                  <input id="clientSearch" type="text" placeholder="Search / Add client..." class="flex-1" />
+                  <button id="addClientBtn" class="secondary-action px-4">+ Client</button>
                 </div>
               </div>
 
-              <div>
-                <label class="text-sm font-medium text-gray-600">Invoice #</label>
-                <input id="invoiceNumber" type="text" class="mt-1 w-full border rounded-lg px-3 py-2" value="#INV-0001" />
+              <div class="space-y-2">
+                <label class="muted-label">Invoice #</label>
+                <input id="invoiceNumber" type="text" class="w-full" value="#INV-0001" />
               </div>
 
-              <div>
-                <label class="text-sm font-medium text-gray-600">Invoice Date</label>
-                <input id="invoiceDate" type="date" class="mt-1 w-full border rounded-lg px-3 py-2" />
+              <div class="space-y-2">
+                <label class="muted-label">Invoice Date</label>
+                <input id="invoiceDate" type="date" class="w-full" />
               </div>
 
-              <div>
-                <label class="text-sm font-medium text-gray-600">Due Date</label>
-                <input id="dueDate" type="date" class="mt-1 w-full border rounded-lg px-3 py-2" />
+              <div class="space-y-2">
+                <label class="muted-label">Due Date</label>
+                <input id="dueDate" type="date" class="w-full" />
               </div>
             </div>
           </div>
 
-          <div class="bg-white rounded-2xl shadow p-6">
-            <div class="flex items-center justify-between">
-              <h3 class="text-lg font-semibold">Items</h3>
-              <div class="text-sm text-gray-500">Tip: press <kbd class="bg-gray-100 px-2 rounded">Tab</kbd> to quickly move across fields</div>
+          <div class="surface-card p-6 space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <h3 class="section-heading">Line Items</h3>
+              <div class="text-sm text-slate-400">Tip: press <kbd class="px-2 py-1 rounded-lg bg-white/10 text-xs">Tab</kbd> to move across fields</div>
             </div>
 
-            <div class="overflow-x-auto mt-4">
-              <table id="itemsTable" class="min-w-full text-sm">
-                <thead class="bg-gray-100 text-gray-700">
+            <div class="overflow-x-auto glass-scroll">
+              <table id="itemsTable" class="modern-table text-sm">
+                <thead>
                   <tr>
-                    <th class="px-4 py-2 text-left">Description</th>
-                    <th class="px-4 py-2 w-20 text-center">Qty</th>
-                    <th class="px-4 py-2 w-32 text-center">Unit</th>
-                    <th class="px-4 py-2 w-32 text-right">Price</th>
-                    <th class="px-4 py-2 w-32 text-right">Line Total</th>
-                    <th class="px-4 py-2 w-12 text-center"></th>
+                    <th class="text-left">Description</th>
+                    <th class="text-center w-24">Qty</th>
+                    <th class="text-center w-32">Unit</th>
+                    <th class="text-right w-32">Price</th>
+                    <th class="text-right w-32">Line Total</th>
+                    <th class="text-center w-12"></th>
                   </tr>
                 </thead>
-                <tbody id="itemRows">
+                <tbody id="itemRows" class="divide-y divide-white/5">
                   <tr class="item-row">
-                    <td class="px-4 py-2"><input class="desc w-full border rounded px-2 py-1" placeholder="Item description" /></td>
-                    <td class="px-4 py-2 text-center"><input type="number" class="qty w-full border rounded px-2 py-1" value="1" min="0" /></td>
-                    <td class="px-4 py-2 text-center"><input class="unit w-full border rounded px-2 py-1" placeholder="pcs/hr" /></td>
-                    <td class="px-4 py-2 text-right"><input type="number" step="0.01" class="price w-full border rounded px-2 py-1 text-right" value="0" min="0" /></td>
-                    <td class="px-4 py-2 text-right text-gray-700 total">$0.00</td>
-                    <td class="px-4 py-2 text-center"><button class="removeRow text-red-500 hover:text-red-700">✖</button></td>
+                    <td class="px-4 py-3"><input class="desc w-full" placeholder="Item description" /></td>
+                    <td class="px-4 py-3 text-center"><input type="number" class="qty w-full" value="1" min="0" /></td>
+                    <td class="px-4 py-3 text-center"><input class="unit w-full" placeholder="pcs/hr" /></td>
+                    <td class="px-4 py-3 text-right"><input type="number" step="0.01" class="price w-full text-right" value="0" min="0" /></td>
+                    <td class="px-4 py-3 text-right text-slate-200 total">$0.00</td>
+                    <td class="px-4 py-3 text-center"><button class="removeRow text-rose-400 hover:text-rose-200" type="button">✖</button></td>
                   </tr>
                 </tbody>
               </table>
-              <button id="addItemBtn" class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">+ Add Item</button>
+            </div>
+            <div class="flex justify-end">
+              <button id="addItemBtn" class="primary-action">+ Add Item</button>
             </div>
           </div>
 
-          <div class="bg-white rounded-2xl shadow p-6">
-            <h3 class="text-lg font-semibold mb-4">Notes / Terms</h3>
-            <textarea id="notes" class="w-full border rounded-lg px-3 py-2 h-24" placeholder="Notes visible on PDF"></textarea>
+          <div class="surface-card p-6 space-y-4">
+            <h3 class="section-heading">Notes &amp; Terms</h3>
+            <textarea id="notes" class="w-full h-32" placeholder="Notes visible on PDF"></textarea>
           </div>
 
         </div>
 
         <div class="space-y-6">
 
-          <div class="bg-white rounded-2xl shadow p-6">
-            <h3 class="text-lg font-semibold mb-4">Summary</h3>
-            <div class="space-y-2 text-sm">
-              <div class="flex justify-between"><span>Subtotal</span><span id="subtotal">$0.00</span></div>
-              <div class="flex justify-between"><span>Discount</span><span id="discount">$0.00</span></div>
-              <div class="flex justify-between"><span>Tax</span><span id="tax">$0.00</span></div>
-              <hr class="my-2">
-              <div class="flex justify-between font-bold text-lg"><span>Total</span><span id="grandTotal">$0.00</span></div>
+          <div class="surface-card p-6 space-y-4">
+            <h3 class="section-heading">Summary</h3>
+            <div class="space-y-3 text-sm">
+              <div class="summary-line"><span>Subtotal</span><strong id="subtotal">$0.00</strong></div>
+              <div class="summary-line"><span>Discount</span><strong id="discount">$0.00</strong></div>
+              <div class="summary-line"><span>Tax</span><strong id="tax">$0.00</strong></div>
+              <hr class="border-slate-700/40">
+              <div class="summary-line text-lg font-semibold"><span>Total</span><strong id="grandTotal">$0.00</strong></div>
             </div>
           </div>
 
-          <div class="bg-white rounded-2xl shadow p-6">
-            <h3 class="text-lg font-semibold mb-4">Actions</h3>
-            <div class="space-y-2">
-              <button id="previewPdfBtn" class="w-full py-2 border rounded-lg hover:bg-gray-50">Preview PDF</button>
-              <button id="downloadBtn" class="w-full py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Download</button>
+          <div class="surface-card p-6 space-y-4">
+            <h3 class="section-heading">Actions</h3>
+            <div class="space-y-3">
+              <button id="previewPdfBtn" class="secondary-action w-full">Preview PDF</button>
+              <button id="downloadBtn" class="primary-action w-full">Download</button>
             </div>
           </div>
 
-          <div class="bg-white rounded-2xl shadow p-6">
-            <h3 class="text-lg font-semibold mb-4">Your Company</h3>
-            <textarea class="w-full border rounded-lg px-3 py-2 h-24" placeholder="Company details (address, etc.)"></textarea>
+          <div class="surface-card p-6 space-y-4">
+            <h3 class="section-heading">Your Company</h3>
+            <textarea class="w-full h-32" placeholder="Company details (address, etc.)"></textarea>
           </div>
 
         </div>
-
+      </div>
+    </div>
       </section>
     </main>
   </div>
@@ -176,14 +191,16 @@
 
     function addItem(data = {}) {
       const tr = document.createElement('tr');
+      const qty = Number(data.qty ?? 1);
+      const price = Number(data.price ?? 0);
       tr.className = 'item-row';
       tr.innerHTML = `
-        <td class="px-4 py-2"><input class="desc w-full border rounded px-2 py-1" placeholder="Item description" value="${data.desc||''}" /></td>
-        <td class="px-4 py-2 text-center"><input type="number" class="qty w-full border rounded px-2 py-1" value="${(data.qty||1)}" min="0" /></td>
-        <td class="px-4 py-2 text-center"><input class="unit w-full border rounded px-2 py-1" placeholder="pcs/hr" value="${data.unit||''}" /></td>
-        <td class="px-4 py-2 text-right"><input type="number" step="0.01" class="price w-full border rounded px-2 py-1 text-right" value="${(data.price||0)}" min="0" /></td>
-        <td class="px-4 py-2 text-right text-gray-700 total">$0.00</td>
-        <td class="px-4 py-2 text-center"><button class="removeRow text-red-500 hover:text-red-700">✖</button></td>
+        <td class="px-4 py-3"><input class="desc w-full" placeholder="Item description" value="${data.desc||''}" /></td>
+        <td class="px-4 py-3 text-center"><input type="number" class="qty w-full" value="${qty}" min="0" /></td>
+        <td class="px-4 py-3 text-center"><input class="unit w-full" placeholder="pcs/hr" value="${data.unit||''}" /></td>
+        <td class="px-4 py-3 text-right"><input type="number" step="0.01" class="price w-full text-right" value="${price}" min="0" /></td>
+        <td class="px-4 py-3 text-right text-slate-200 total">${formatMoney(qty * price)}</td>
+        <td class="px-4 py-3 text-center"><button class="removeRow text-rose-400 hover:text-rose-200" type="button">✖</button></td>
       `;
       itemRows.appendChild(tr);
       attachRowListeners(tr);

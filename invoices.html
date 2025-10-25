@@ -5,69 +5,73 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Invoices — InvoicePro</title>
 
-  <!-- Tailwind CDN for consistent theme -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/modern-ui.css">
   <style> body { font-family: 'Inter', sans-serif; } </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body data-modern-ui class="antialiased">
 
-  <div class="flex min-h-screen">
+<div class="flex min-h-screen">
 
+  <!-- Sidebar -->
+  <aside id="main-sidebar" data-active-nav="invoices" class="hidden md:flex w-[19.5rem] shrink-0" aria-label="Sidebar"></aside>
     <!-- Sidebar -->
     <aside id="main-sidebar" data-active-nav="invoices" class="w-64 bg-white shadow-md hidden md:flex flex-col"></aside>
 
-    <!-- Main -->
-    <main class="flex-1 flex flex-col">
+  <!-- Main -->
+  <main class="flex-1 flex flex-col">
 
-      <!-- Topbar -->
-      <header class="flex items-center justify-between bg-white shadow px-6 py-4 sticky top-0 z-10">
-        <div class="flex items-center gap-4">
-          <h2 class="text-2xl font-semibold">Invoices</h2>
-          <div class="text-sm text-gray-500">Manage & send invoices</div>
-        </div>
+    <!-- Topbar -->
+    <header class="modern-topbar flex items-center justify-between px-8 py-5 sticky top-0 z-20">
+      <div>
+        <p class="modern-breadcrumb">Records</p>
+        <h2 class="text-3xl font-semibold leading-tight mt-1">Invoices</h2>
+      </div>
+      <div class="flex items-center gap-4">
+        <input id="globalSearch" type="text" placeholder="Search invoices, clients..." class="modern-input w-64" />
+        <a href="create-invoice.html" class="primary-action">
+          <span class="text-lg">＋</span>
+          <span>New Invoice</span>
+        </a>
+        <div class="w-11 h-11 rounded-full bg-gradient-to-br from-sky-400/80 via-indigo-500/80 to-purple-500/80 flex items-center justify-center text-white font-semibold shadow-lg shadow-sky-500/40">R</div>
+      </div>
+    </header>
 
-        <div class="flex items-center gap-4">
-          <input id="globalSearch" type="text" placeholder="Search invoices, clients..." class="px-3 py-2 border rounded-lg focus:ring focus:ring-indigo-200" />
-          <a href="create-invoice.html" class="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
-            + New Invoice
-          </a>
-          <div class="w-10 h-10 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-800 font-bold">R</div>
-        </div>
-      </header>
+    <!-- Page content -->
+    <section class="flex-1 overflow-y-auto">
+      <div class="max-w-7xl mx-auto px-6 py-10 space-y-8">
 
-      <!-- Page content -->
-      <section class="p-6 space-y-6">
-
-        <!-- Summary cards (clickable, same behavior as dashboard) -->
+        <!-- Summary cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <button data-filter="all" class="summary-card bg-white p-5 rounded-2xl shadow hover:shadow-lg transition text-left">
-            <h3 class="text-gray-500 text-sm font-medium">Total</h3>
-            <p class="text-2xl font-bold mt-1" id="cardTotal">0</p>
+          <button data-filter="all" class="surface-card metric-card text-left">
+            <h3>Total</h3>
+            <p class="metric-value" id="cardTotal">0</p>
+            <span class="text-sm text-slate-400">Invoices created</span>
           </button>
-
-          <button data-filter="pending" class="summary-card bg-white p-5 rounded-2xl shadow hover:shadow-lg transition text-left">
-            <h3 class="text-gray-500 text-sm font-medium">Pending</h3>
-            <p class="text-2xl font-bold mt-1 text-amber-600" id="cardPending">0</p>
+          <button data-filter="pending" class="surface-card metric-card text-left">
+            <h3>Pending</h3>
+            <p class="metric-value text-amber-300" id="cardPending">0</p>
+            <span class="text-sm text-slate-400">Awaiting payment</span>
           </button>
-
-          <button data-filter="overdue" class="summary-card bg-white p-5 rounded-2xl shadow hover:shadow-lg transition text-left">
-            <h3 class="text-gray-500 text-sm font-medium">Overdue</h3>
-            <p class="text-2xl font-bold mt-1 text-red-600" id="cardOverdue">0</p>
+          <button data-filter="overdue" class="surface-card metric-card text-left">
+            <h3>Overdue</h3>
+            <p class="metric-value text-rose-300" id="cardOverdue">0</p>
+            <span class="text-sm text-slate-400">Past due</span>
           </button>
-
-          <button data-filter="paid" class="summary-card bg-white p-5 rounded-2xl shadow hover:shadow-lg transition text-left">
-            <h3 class="text-gray-500 text-sm font-medium">Paid</h3>
-            <p class="text-2xl font-bold mt-1 text-green-600" id="cardPaid">0</p>
+          <button data-filter="paid" class="surface-card metric-card text-left">
+            <h3>Paid</h3>
+            <p class="metric-value text-emerald-300" id="cardPaid">0</p>
+            <span class="text-sm text-slate-400">Completed</span>
           </button>
         </div>
 
         <!-- Filter bar & bulk actions -->
-        <div class="bg-white p-5 rounded-2xl shadow flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div class="flex items-center gap-3">
-            <div class="flex items-center gap-2">
-              <label class="text-sm text-gray-600">Filter:</label>
-              <select id="filterSelect" class="border rounded-lg px-3 py-2">
+        <div class="surface-card surface-card--soft px-6 py-6 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div class="flex items-center gap-3">
+              <label class="muted-label">Filter</label>
+              <select id="filterSelect" class="min-w-[10rem]">
                 <option value="all">All</option>
                 <option value="pending">Pending</option>
                 <option value="overdue">Overdue</option>
@@ -75,40 +79,56 @@
                 <option value="recurring">Recurring</option>
               </select>
             </div>
-
-            <div class="flex items-center gap-2">
-              <button id="bulkSendBtn" class="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Send</button>
-              <button id="bulkDownloadBtn" class="px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">Download</button>
-              <button id="bulkDeleteBtn" class="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200">Delete</button>
+            <div class="flex flex-wrap items-center gap-3">
+              <button id="bulkSendBtn" class="primary-action px-4">Send</button>
+              <button id="bulkDownloadBtn" class="secondary-action px-4">Download</button>
+              <button id="bulkDeleteBtn" class="secondary-action px-4 text-rose-300 hover:text-white">Delete</button>
             </div>
           </div>
-
-          <div class="flex items-center gap-3">
-            <div class="text-sm text-gray-500">Showing <span id="visibleCount">0</span> of <span id="totalCount">0</span></div>
-          </div>
+          <div class="text-sm text-slate-400">Showing <span id="visibleCount">0</span> of <span id="totalCount">0</span></div>
         </div>
 
         <!-- Table: invoices -->
-        <div class="bg-white p-6 rounded-2xl shadow overflow-x-auto">
-          <table class="min-w-full text-sm" id="invoicesTable">
-            <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+        <div class="surface-card px-6 py-7 overflow-x-auto">
+          <table class="modern-table text-sm" id="invoicesTable">
+            <thead>
               <tr>
-                <th class="px-4 py-3"><input id="selectAll" type="checkbox" /></th>
-                <th class="px-4 py-3 text-left">Invoice #</th>
-                <th class="px-4 py-3 text-left">Client</th>
-                <th class="px-4 py-3 text-left">Date</th>
-                <th class="px-4 py-3 text-left">Due</th>
-                <th class="px-4 py-3 text-left">Status</th>
-                <th class="px-4 py-3 text-right">Amount</th>
-                <th class="px-4 py-3 text-left">Options</th>
+                <th class="w-14 text-center"><input id="selectAll" type="checkbox" class="accent-sky-400" /></th>
+                <th class="text-left">Invoice #</th>
+                <th class="text-left">Client</th>
+                <th class="text-left">Date</th>
+                <th class="text-left">Due</th>
+                <th class="text-left">Status</th>
+                <th class="text-right">Amount</th>
+                <th class="text-left">Options</th>
               </tr>
             </thead>
-            <tbody id="invoiceTableBody" class="divide-y">
+            <tbody id="invoiceTableBody" class="divide-y divide-white/5">
               <!-- rows inserted by JS -->
             </tbody>
           </table>
         </div>
 
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Scripts -->
+<script src="js/sidebar.js"></script>
+
+<script>
+  (function () {
+    const invoiceTableBody = document.getElementById('invoiceTableBody');
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const filterSelect = document.getElementById('filterSelect');
+    const visibleCountEl = document.getElementById('visibleCount');
+    const totalCountEl = document.getElementById('totalCount');
+
+    function tryCall(fnName, ...args) {
+      const fn = window[fnName];
+      if (typeof fn === 'function') {
+        try { return fn(...args); } catch (e) { console.error(fnName, e); }
       </section>
     </main>
   </div>
@@ -133,230 +153,171 @@
         }
         return undefined;
       }
+      return undefined;
+    }
 
-      // Sample invoices — your repo will likely load real data. Keep same shape as your model.
-      const sampleInvoices = [
-        { id: 'INV-00128', client: 'Acme Corp', date: '2025-10-12', due: '2025-10-19', status: 'Paid', amount: 540.00, recurring: false },
-        { id: 'INV-00127', client: 'Blue Ocean LLC', date: '2025-10-10', due: '2025-10-17', status: 'Pending', amount: 1240.00, recurring: false },
-        { id: 'INV-00126', client: 'Skyline Builders', date: '2025-10-08', due: '2025-10-15', status: 'Overdue', amount: 820.00, recurring: true },
-        // add more rows as needed
-      ];
+    const sampleInvoices = [
+      { id: 'INV-00128', client: 'Acme Corp', date: '2025-10-12', due: '2025-10-19', status: 'Paid', amount: 540.00, recurring: false },
+      { id: 'INV-00127', client: 'Blue Ocean LLC', date: '2025-10-10', due: '2025-10-17', status: 'Pending', amount: 1240.00, recurring: false },
+      { id: 'INV-00126', client: 'Skyline Builders', date: '2025-10-08', due: '2025-10-15', status: 'Overdue', amount: 820.00, recurring: true },
+    ];
 
-      // Data store (replace with server data)
-      let invoices = [];
+    let invoices = [];
 
-      // Format money
-      function fmt(n) { return '$' + Number(n || 0).toFixed(2); }
+    function fmt(n) { return '$' + Number(n || 0).toFixed(2); }
 
-      // Build row DOM — includes icons: view, resend, recurring, menu
-      function buildRow(inv) {
-        const tr = document.createElement('tr');
-        tr.dataset.id = inv.id;
-        tr.innerHTML = `
-          <td class="px-4 py-3"><input class="row-checkbox" type="checkbox" data-id="${inv.id}" /></td>
-          <td class="px-4 py-3 font-medium">${inv.id}</td>
-          <td class="px-4 py-3">${inv.client}</td>
-          <td class="px-4 py-3">${inv.date}</td>
-          <td class="px-4 py-3">${inv.due}</td>
-          <td class="px-4 py-3">
-            ${statusBadge(inv.status)}
-          </td>
-          <td class="px-4 py-3 text-right font-semibold">${fmt(inv.amount)}</td>
-          <td class="px-4 py-3">
-            <div class="flex items-center gap-3">
-              <button class="text-indigo-600 viewBtn" title="View" data-id="${inv.id}">View</button>
-              ${inv.status !== 'Paid' ? `<button class="text-amber-600 resendBtn" title="Resend" data-id="${inv.id}">Resend</button>` : ''}
-              <button class="recurringBtn" title="Toggle recurring" data-id="${inv.id}">${inv.recurring ? '🔁' : '⭕'}</button>
-              <div class="relative inline-block">
-                <button class="menuBtn text-gray-500" data-id="${inv.id}" title="Actions">⋮</button>
-                <div class="menu hidden absolute right-0 mt-2 bg-white border rounded shadow-md text-sm z-10">
-                  <button class="block w-full text-left px-4 py-2 actionView" data-id="${inv.id}">Open</button>
-                  <button class="block w-full text-left px-4 py-2 actionDownload" data-id="${inv.id}">Download PDF</button>
-                  <button class="block w-full text-left px-4 py-2 actionDelete" data-id="${inv.id}">Delete</button>
-                </div>
+    function statusBadge(status) {
+      const variant = status === 'Paid' ? 'paid' : status === 'Pending' ? 'pending' : 'overdue';
+      return `<span class="status-pill" data-variant="${variant}">${status}</span>`;
+    }
+
+    function buildRow(inv) {
+      const tr = document.createElement('tr');
+      tr.dataset.id = inv.id;
+      tr.className = 'transition-colors hover:bg-white/5';
+      tr.innerHTML = `
+        <td class="px-4 py-3 text-center"><input class="row-checkbox accent-sky-400" type="checkbox" data-id="${inv.id}" /></td>
+        <td class="px-4 py-3 font-semibold text-slate-100">${inv.id}</td>
+        <td class="px-4 py-3 text-slate-300">${inv.client}</td>
+        <td class="px-4 py-3 text-slate-400">${inv.date}</td>
+        <td class="px-4 py-3 text-slate-400">${inv.due}</td>
+        <td class="px-4 py-3">${statusBadge(inv.status)}</td>
+        <td class="px-4 py-3 text-right font-semibold text-slate-100">${fmt(inv.amount)}</td>
+        <td class="px-4 py-3">
+          <div class="flex flex-wrap items-center gap-2 text-xs">
+            <button class="secondary-action px-3 py-1 viewBtn" title="View" data-id="${inv.id}">View</button>
+            ${inv.status !== 'Paid' ? `<button class="secondary-action px-3 py-1 resendBtn" title="Resend" data-id="${inv.id}">Resend</button>` : ''}
+            <button class="secondary-action px-3 py-1 recurringBtn" title="Toggle recurring" data-id="${inv.id}">${inv.recurring ? 'Recurring' : 'One-off'}</button>
+            <div class="relative inline-block">
+              <button class="secondary-action px-3 py-1 menuBtn" data-id="${inv.id}" title="More">⋮</button>
+              <div class="menu hidden absolute right-0 mt-2 w-44 rounded-2xl border border-white/10 bg-slate-900/95 backdrop-blur shadow-lg shadow-black/30 text-sm z-10">
+                <button class="block w-full text-left px-4 py-2 hover:bg-white/5 rounded-t-2xl actionView" data-id="${inv.id}">Open</button>
+                <button class="block w-full text-left px-4 py-2 hover:bg-white/5 actionDownload" data-id="${inv.id}">Download PDF</button>
+                <button class="block w-full text-left px-4 py-2 hover:bg-rose-500/10 text-rose-300 rounded-b-2xl actionDelete" data-id="${inv.id}">Delete</button>
               </div>
             </div>
-          </td>
-        `;
-        // attach event handlers
-        tr.querySelector('.viewBtn')?.addEventListener('click', () => viewInvoice(inv.id));
-        tr.querySelector('.resendBtn')?.addEventListener('click', () => resendInvoice(inv.id));
-        tr.querySelector('.recurringBtn')?.addEventListener('click', (e) => toggleRecurring(inv.id, e.target));
-        tr.querySelector('.menuBtn')?.addEventListener('click', (e) => toggleMenu(e.target));
-        tr.querySelector('.actionDownload')?.addEventListener('click', () => downloadInvoice(inv.id));
-        tr.querySelector('.actionDelete')?.addEventListener('click', () => deleteInvoice(inv.id));
-        tr.querySelector('.actionView')?.addEventListener('click', () => viewInvoice(inv.id));
-        return tr;
-      }
+          </div>
+        </td>
+      `;
+      tr.querySelector('.viewBtn')?.addEventListener('click', () => viewInvoice(inv.id));
+      tr.querySelector('.resendBtn')?.addEventListener('click', () => resendInvoice(inv.id));
+      tr.querySelector('.recurringBtn')?.addEventListener('click', (e) => toggleRecurring(inv.id, e.target));
+      tr.querySelector('.menuBtn')?.addEventListener('click', (e) => toggleMenu(e.target));
+      tr.querySelector('.actionDownload')?.addEventListener('click', () => downloadInvoice(inv.id));
+      tr.querySelector('.actionDelete')?.addEventListener('click', () => deleteInvoice(inv.id));
+      tr.querySelector('.actionView')?.addEventListener('click', () => viewInvoice(inv.id));
+      return tr;
+    }
 
-      function statusBadge(status) {
-        const base = 'px-2 py-1 rounded-full text-xs font-semibold';
-        if (status === 'Paid') return `<span class="${base} bg-green-100 text-green-700">Paid</span>`;
-        if (status === 'Pending') return `<span class="${base} bg-amber-100 text-amber-700">Pending</span>`;
-        if (status === 'Overdue') return `<span class="${base} bg-red-100 text-red-700">Overdue</span>`;
-        return `<span class="${base} bg-gray-100 text-gray-700">${status}</span>`;
-      }
+    function renderInvoices(list) {
+      invoiceTableBody.innerHTML = '';
+      list.forEach(inv => invoiceTableBody.appendChild(buildRow(inv)));
+      visibleCountEl.textContent = list.length;
+    }
 
-      // Render table based on filter
-      function render(filter = 'all') {
-        invoiceTableBody.innerHTML = '';
-        const list = invoices.filter(inv => {
-          if (filter === 'all') return true;
-          if (filter === 'recurring') return !!inv.recurring;
-          return inv.status.toLowerCase() === filter;
-        });
-        list.forEach(inv => invoiceTableBody.appendChild(buildRow(inv)));
-        visibleCountEl.textContent = list.length;
-        totalCountEl.textContent = invoices.length;
-        // update summary cards counts
-        updateCards();
-      }
+    function updateSummary(list) {
+      const total = list.length;
+      const pending = list.filter(inv => inv.status === 'Pending').length;
+      const overdue = list.filter(inv => inv.status === 'Overdue').length;
+      const paid = list.filter(inv => inv.status === 'Paid').length;
+      document.getElementById('cardTotal').textContent = total;
+      document.getElementById('cardPending').textContent = pending;
+      document.getElementById('cardOverdue').textContent = overdue;
+      document.getElementById('cardPaid').textContent = paid;
+      totalCountEl.textContent = invoices.length;
+    }
 
-      // Update cards
-      function updateCards() {
-        const total = invoices.length;
-        const pending = invoices.filter(i => i.status === 'Pending').length;
-        const overdue = invoices.filter(i => i.status === 'Overdue').length;
-        const paid = invoices.filter(i => i.status === 'Paid').length;
-        document.getElementById('cardTotal').textContent = total;
-        document.getElementById('cardPending').textContent = pending;
-        document.getElementById('cardOverdue').textContent = overdue;
-        document.getElementById('cardPaid').textContent = paid;
-      }
-
-      // ---- Action handlers (call repo functions if available, else fallback) ----
-      function viewInvoice(id) {
-        // prefer repo implementation: openInvoice(id)
-        if (tryCall('openInvoice', id) !== undefined) return;
-        if (tryCall('viewInvoice', id) !== undefined) return;
-        // fallback: open invoice details page
-        window.location.href = `invoice-details.html?id=${id}`;
-      }
-
-      function resendInvoice(id) {
-        if (tryCall('resendInvoice', id) !== undefined) return;
-        // fallback: simple confirmation
-        if (!confirm('Resend invoice ' + id + '?')) return;
-        // pretend send
-        alert('Invoice ' + id + ' resent (placeholder). Implement resendInvoice(id) for real behavior.');
-      }
-
-      function toggleRecurring(id, btn) {
-        if (tryCall('toggleRecurring', id) !== undefined) return;
-        // fallback: toggle local model and update UI
-        const inv = invoices.find(i => i.id === id);
-        if (!inv) return;
-        inv.recurring = !inv.recurring;
-        btn.textContent = inv.recurring ? '🔁' : '⭕';
-      }
-
-      function downloadInvoice(id) {
-        if (tryCall('downloadInvoice', id) !== undefined) return;
-        // fallback: open print preview for that invoice (if you have collectInvoicePayload)
-        alert('Download invoice ' + id + ' (placeholder). Implement downloadInvoice(id) in your scripts to generate PDF.');
-      }
-
-      function deleteInvoice(id) {
-        if (tryCall('deleteInvoice', id) !== undefined) return;
-        if (!confirm('Delete invoice ' + id + '? This cannot be undone.')) return;
-        invoices = invoices.filter(i => i.id !== id);
-        render(filterSelect.value);
-      }
-
-      // menu toggle
-      function toggleMenu(btn) {
-        const menu = btn.nextElementSibling;
-        if (!menu) return;
-        menu.classList.toggle('hidden');
-        // close it when clicking outside
-        const onDoc = (e) => {
-          if (!menu.contains(e.target) && e.target !== btn) {
-            menu.classList.add('hidden');
-            document.removeEventListener('click', onDoc);
-          }
-        };
-        document.addEventListener('click', onDoc);
-      }
-
-      // Bulk actions
-      selectAllCheckbox.addEventListener('change', () => {
-        const checked = selectAllCheckbox.checked;
-        document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = checked);
-      });
-
-      document.getElementById('bulkSendBtn')?.addEventListener('click', () => {
-        const ids = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.dataset.id);
-        if (!ids.length) return alert('Select invoices to send.');
-        if (tryCall('bulkSend', ids) !== undefined) return;
-        alert('Bulk send placeholder for: ' + ids.join(', '));
-      });
-
-      document.getElementById('bulkDownloadBtn')?.addEventListener('click', () => {
-        const ids = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.dataset.id);
-        if (!ids.length) return alert('Select invoices to download.');
-        if (tryCall('bulkDownload', ids) !== undefined) return;
-        alert('Bulk download placeholder for: ' + ids.join(', '));
-      });
-
-      document.getElementById('bulkDeleteBtn')?.addEventListener('click', () => {
-        const ids = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.dataset.id);
-        if (!ids.length) return alert('Select invoices to delete.');
-        if (!confirm('Delete selected invoices?')) return;
-        if (tryCall('bulkDelete', ids) !== undefined) return;
-        invoices = invoices.filter(i => !ids.includes(i.id));
-        render(filterSelect.value);
-      });
-
-      // Filters (select & top cards)
-      filterSelect.addEventListener('change', () => render(filterSelect.value));
-      document.querySelectorAll('.summary-card').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const f = btn.dataset.filter || 'all';
-          filterSelect.value = f;
-          render(f);
-        });
-      });
-
-      // search box
-      document.getElementById('globalSearch')?.addEventListener('input', (e) => {
-        const q = e.target.value.trim().toLowerCase();
-        if (!q) return render(filterSelect.value);
-        invoiceTableBody.innerHTML = '';
-        const list = invoices.filter(inv => {
-          return inv.id.toLowerCase().includes(q) || inv.client.toLowerCase().includes(q) || String(inv.amount).includes(q);
-        });
-        list.forEach(inv => invoiceTableBody.appendChild(buildRow(inv)));
-        visibleCountEl.textContent = list.length;
-      });
-
-      // Initial load: try to let repo provide invoices first
-      function init() {
-        const repoData = tryCall('loadInvoices'); // expected to return array if present
-        if (Array.isArray(repoData) && repoData.length) {
-          invoices = repoData;
+    function applyFilter() {
+      const value = filterSelect.value;
+      let list = invoices.slice();
+      if (value !== 'all') {
+        if (value === 'recurring') {
+          list = list.filter(inv => inv.recurring);
         } else {
-          invoices = sampleInvoices.slice();
+          list = list.filter(inv => inv.status.toLowerCase() === value);
         }
-
-        // If repo has hooks for additional UI wiring, call
-        tryCall('attachInvoicePageHooks', { render, resendInvoice, viewInvoice, downloadInvoice, toggleRecurring });
-
-        // render initial view
-        render(filterSelect.value || 'all');
       }
+      renderInvoices(list);
+      updateSummary(list);
+    }
 
-      // expose small API
-      window.invoicesPage = { render, reload: init, getInvoices: () => invoices };
+    function toggleRecurring(id, button) {
+      const invoice = invoices.find(inv => inv.id === id);
+      if (!invoice) return;
+      invoice.recurring = !invoice.recurring;
+      button.textContent = invoice.recurring ? 'Recurring' : 'One-off';
+      tryCall('toggleRecurringInvoice', id, invoice.recurring);
+    }
 
-      // init on DOM ready
-      document.addEventListener('DOMContentLoaded', init);
-    })();
-  </script>
+    function toggleMenu(button) {
+      const menu = button.nextElementSibling;
+      document.querySelectorAll('#invoiceTableBody .menu').forEach(el => {
+        if (el !== menu) el.classList.add('hidden');
+      });
+      menu?.classList.toggle('hidden');
+    }
 
-  <!-- Optionally include your repo scripts AFTER this file so they can override behavior as needed:
-       <script src="scripts/invoice.js"></script>
-       <script src="scripts/main.js"></script>
-  -->
+    function viewInvoice(id) {
+      alert(`Viewing invoice ${id}`);
+      tryCall('viewInvoice', id);
+    }
+
+    function resendInvoice(id) {
+      alert(`Resending invoice ${id}`);
+      tryCall('resendInvoice', id);
+    }
+
+    function downloadInvoice(id) {
+      alert(`Downloading invoice ${id}`);
+      tryCall('downloadInvoice', id);
+    }
+
+    function deleteInvoice(id) {
+      if (confirm(`Delete invoice ${id}?`)) {
+        invoices = invoices.filter(inv => inv.id !== id);
+        applyFilter();
+        tryCall('deleteInvoice', id);
+      }
+    }
+
+    selectAllCheckbox.addEventListener('change', (event) => {
+      const checked = event.target.checked;
+      invoiceTableBody.querySelectorAll('.row-checkbox').forEach(cb => {
+        cb.checked = checked;
+      });
+    });
+
+    invoiceTableBody.addEventListener('change', () => {
+      const checkboxes = invoiceTableBody.querySelectorAll('.row-checkbox');
+      const allChecked = checkboxes.length && Array.from(checkboxes).every(cb => cb.checked);
+      selectAllCheckbox.checked = allChecked;
+    });
+
+    document.addEventListener('click', (event) => {
+      if (!event.target.closest('.menuBtn')) {
+        document.querySelectorAll('#invoiceTableBody .menu').forEach(menu => menu.classList.add('hidden'));
+      }
+    });
+
+    filterSelect.addEventListener('change', applyFilter);
+
+    invoices = sampleInvoices.slice();
+    totalCountEl.textContent = invoices.length;
+    applyFilter();
+
+    document.querySelectorAll('button[data-filter]').forEach(button => {
+      button.addEventListener('click', () => {
+        filterSelect.value = button.dataset.filter;
+        applyFilter();
+      });
+    });
+
+    document.getElementById('bulkSendBtn').addEventListener('click', () => alert('Bulk send triggered'));
+    document.getElementById('bulkDownloadBtn').addEventListener('click', () => alert('Bulk download triggered'));
+    document.getElementById('bulkDeleteBtn').addEventListener('click', () => alert('Bulk delete triggered'));
+  })();
+</script>
+
 </body>
 </html>
 

@@ -1,4 +1,58 @@
 <!-- sidebar.html -->
+<div data-sidebar-root class="sidebar-shell hidden md:flex w-full max-w-[19.5rem] flex-col min-h-screen text-slate-100">
+  <div class="sidebar-brand">
+    <a href="dashboard.html" class="flex items-center gap-4">
+      <span class="sidebar-brand-badge">
+        <svg aria-hidden="true" viewBox="0 0 56 56" class="h-10 w-10 text-slate-950">
+          <defs>
+            <linearGradient id="invoicepro-logo" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="rgba(15,23,42,0.65)" />
+              <stop offset="100%" stop-color="rgba(15,23,42,0.9)" />
+            </linearGradient>
+          </defs>
+          <path fill="url(#invoicepro-logo)" d="M16 12h14c6.5 0 11 4.1 11 10.2 0 5.8-4.3 9.8-10.7 9.8H22v11h-6V12Zm6 6v7h6.1c2.4 0 4-1.5 4-3.6s-1.6-3.4-4-3.4H22Zm19-6h6v28h-6V12Z" />
+        </svg>
+        <span class="sr-only">InvoicePro</span>
+      </span>
+      <span class="flex flex-col leading-tight">
+        <span class="text-[1.45rem] font-semibold tracking-tight text-white">InvoicePro</span>
+        <span class="text-xs uppercase tracking-[0.55em] text-sky-300/80">Command Center</span>
+      </span>
+    </a>
+  </div>
+  <nav class="flex-1" aria-label="Primary navigation">
+    <a href="dashboard.html" data-nav="dashboard">
+      <span class="icon">🏠</span>
+      <span>Dashboard</span>
+    </a>
+    <a href="create-invoice.html" data-nav="create-invoice">
+      <span class="icon">🧾</span>
+      <span>Create Invoice</span>
+    </a>
+    <a href="invoices.html" data-nav="invoices">
+      <span class="icon">💼</span>
+      <span>Invoices</span>
+    </a>
+    <a href="clients.html" data-nav="clients">
+      <span class="icon">👤</span>
+      <span>Clients</span>
+    </a>
+    <a href="reports.html" data-nav="reports">
+      <span class="icon">📊</span>
+      <span>Reports</span>
+    </a>
+    <a href="settings.html" data-nav="settings">
+      <span class="icon">⚙️</span>
+      <span>Settings</span>
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <button type="button" id="logout-button" class="logout-button">
+      <span class="text-lg">↪</span>
+      <span>Logout</span>
+    </button>
+  </div>
+</div>
 <div data-sidebar-root class="w-64 bg-white shadow-md hidden md:flex flex-col">
   <div class="px-6 py-4 border-b">
     <a href="dashboard.html">
