@@ -122,6 +122,7 @@
     const invoiceTableBody = document.getElementById('invoiceTableBody');
     const selectAllCheckbox = document.getElementById('selectAll');
     const filterSelect = document.getElementById('filterSelect');
+    const searchInput = document.getElementById('globalSearch');
     const visibleCountEl = document.getElementById('visibleCount');
     const totalCountEl = document.getElementById('totalCount');
 
@@ -227,8 +228,22 @@
       totalCountEl.textContent = invoices.length;
     }
 
+    function matchesQuery(inv, query) {
+      if (!query) return true;
+      const normalized = query.toLowerCase();
+      return [
+        inv.id,
+        inv.client,
+        inv.status,
+        inv.date,
+        inv.due,
+        String(inv.amount)
+      ].some(field => String(field).toLowerCase().includes(normalized));
+    }
+
     function applyFilter() {
       const value = filterSelect.value;
+      const query = searchInput ? searchInput.value.trim() : '';
       let list = invoices.slice();
       if (value !== 'all') {
         if (value === 'recurring') {
@@ -237,6 +252,7 @@
           list = list.filter(inv => inv.status.toLowerCase() === value);
         }
       }
+      list = list.filter(inv => matchesQuery(inv, query));
       renderInvoices(list);
       updateSummary(list);
     }
@@ -300,6 +316,7 @@
     });
 
     filterSelect.addEventListener('change', applyFilter);
+    searchInput?.addEventListener('input', applyFilter);
 
     invoices = sampleInvoices.slice();
     totalCountEl.textContent = invoices.length;
