@@ -124,6 +124,7 @@
     const filterSelect = document.getElementById('filterSelect');
     const visibleCountEl = document.getElementById('visibleCount');
     const totalCountEl = document.getElementById('totalCount');
+    const globalSearchInput = document.getElementById('globalSearch');
 
     function tryCall(fnName, ...args) {
       const fn = window[fnName];
@@ -228,14 +229,23 @@
     }
 
     function applyFilter() {
-      const value = filterSelect.value;
+      const filterValue = filterSelect.value;
+      const query = globalSearchInput?.value.trim().toLowerCase() || '';
+
       let list = invoices.slice();
-      if (value !== 'all') {
-        if (value === 'recurring') {
+      if (filterValue !== 'all') {
+        if (filterValue === 'recurring') {
           list = list.filter(inv => inv.recurring);
         } else {
-          list = list.filter(inv => inv.status.toLowerCase() === value);
+          list = list.filter(inv => inv.status.toLowerCase() === filterValue);
         }
+      }
+
+      if (query) {
+        list = list.filter(inv => {
+          return [inv.id, inv.client, inv.status]
+            .some(value => String(value).toLowerCase().includes(query));
+        });
       }
       renderInvoices(list);
       updateSummary(list);
@@ -300,6 +310,7 @@
     });
 
     filterSelect.addEventListener('change', applyFilter);
+    globalSearchInput?.addEventListener('input', applyFilter);
 
     invoices = sampleInvoices.slice();
     totalCountEl.textContent = invoices.length;
