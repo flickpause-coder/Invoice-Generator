@@ -1,0 +1,393 @@
+:root {
+  color-scheme: dark;
+  --modern-bg: radial-gradient(140% 140% at 0% 0%, #1f2a44 0%, #0f172a 45%, #020617 100%);
+  --modern-bg-overlay: radial-gradient(85% 65% at 110% -10%, rgba(56, 189, 248, 0.12) 0%, rgba(76, 29, 149, 0.08) 46%, transparent 100%),
+    linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(14, 165, 233, 0.04));
+  --modern-surface: linear-gradient(160deg, rgba(15, 23, 42, 0.82), rgba(2, 6, 23, 0.82));
+  --modern-surface-strong: linear-gradient(160deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.85));
+  --modern-border: rgba(148, 163, 184, 0.18);
+  --modern-border-strong: rgba(148, 163, 184, 0.26);
+  --modern-ring: rgba(59, 130, 246, 0.45);
+  --modern-text: #e2e8f0;
+  --modern-text-muted: #94a3b8;
+  --modern-shadow: 0 25px 65px -25px rgba(15, 23, 42, 0.75);
+  --modern-shadow-strong: 0 40px 75px -35px rgba(30, 64, 175, 0.55);
+  --modern-radius: 24px;
+}
+
+[data-modern-ui] {
+  position: relative;
+  min-height: 100vh;
+  background: var(--modern-bg);
+  color: var(--modern-text);
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+[data-modern-ui]::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: var(--modern-bg-overlay);
+  pointer-events: none;
+  z-index: -1;
+}
+
+[data-modern-ui] ::selection {
+  background: rgba(99, 102, 241, 0.35);
+  color: white;
+}
+
+[data-modern-ui] a {
+  color: inherit;
+}
+
+.surface-card {
+  border-radius: var(--modern-radius);
+  background: var(--modern-surface);
+  border: 1px solid var(--modern-border);
+  box-shadow: var(--modern-shadow);
+  backdrop-filter: blur(20px);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.surface-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--modern-ring);
+  box-shadow: var(--modern-shadow-strong);
+}
+
+.surface-card--soft {
+  background: var(--modern-surface-strong);
+}
+
+.surface-card--muted {
+  background: linear-gradient(160deg, rgba(15, 23, 42, 0.72), rgba(2, 6, 23, 0.72));
+}
+
+.modern-topbar {
+  background: linear-gradient(120deg, rgba(15, 23, 42, 0.82), rgba(2, 6, 23, 0.9));
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+  box-shadow: 0 18px 60px -30px rgba(14, 165, 233, 0.55);
+  backdrop-filter: blur(18px);
+}
+
+.modern-topbar h2 {
+  color: white;
+}
+
+.modern-input,
+[data-modern-ui] input[type='text'],
+[data-modern-ui] input[type='email'],
+[data-modern-ui] input[type='number'],
+[data-modern-ui] input[type='date'],
+[data-modern-ui] textarea,
+[data-modern-ui] select {
+  border-radius: 0.95rem;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: rgba(15, 23, 42, 0.6);
+  color: var(--modern-text);
+  padding: 0.75rem 1rem;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.35);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+[data-modern-ui] input::placeholder,
+[data-modern-ui] textarea::placeholder {
+  color: var(--modern-text-muted);
+}
+
+[data-modern-ui] input:focus,
+[data-modern-ui] textarea:focus,
+[data-modern-ui] select:focus {
+  outline: none;
+  border-color: var(--modern-ring);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
+  background: rgba(15, 23, 42, 0.85);
+}
+
+[data-modern-ui] button.primary-action,
+[data-modern-ui] a.primary-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.95rem;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.9), rgba(129, 140, 248, 0.9));
+  color: white;
+  font-weight: 600;
+  padding: 0.75rem 1.2rem;
+  box-shadow: 0 18px 40px -22px rgba(56, 189, 248, 0.8);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+[data-modern-ui] button.primary-action:hover,
+[data-modern-ui] a.primary-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 45px -20px rgba(129, 140, 248, 0.85);
+}
+
+[data-modern-ui] button.secondary-action,
+[data-modern-ui] a.secondary-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.95rem;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.45);
+  color: var(--modern-text);
+  font-weight: 500;
+  padding: 0.75rem 1.2rem;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+[data-modern-ui] button.secondary-action:hover,
+[data-modern-ui] a.secondary-action:hover {
+  border-color: rgba(148, 163, 184, 0.6);
+  background: rgba(15, 23, 42, 0.75);
+}
+
+[data-modern-ui] table.modern-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+[data-modern-ui] table.modern-table thead {
+  background: rgba(15, 23, 42, 0.85);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.68rem;
+  color: var(--modern-text-muted);
+}
+
+[data-modern-ui] table.modern-table tbody tr {
+  background: rgba(15, 23, 42, 0.55);
+  transition: background 0.2s ease;
+}
+
+[data-modern-ui] table.modern-table tbody tr:hover {
+  background: rgba(30, 41, 59, 0.75);
+}
+
+[data-modern-ui] table.modern-table th,
+[data-modern-ui] table.modern-table td {
+  padding: 1rem 1.25rem;
+}
+
+[data-modern-ui] .status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 9999px;
+  padding: 0.2rem 0.8rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.status-pill[data-variant='paid'] {
+  background: rgba(34, 197, 94, 0.18);
+  color: rgba(134, 239, 172, 0.95);
+}
+
+.status-pill[data-variant='pending'] {
+  background: rgba(250, 204, 21, 0.18);
+  color: rgba(253, 224, 71, 0.95);
+}
+
+.status-pill[data-variant='overdue'] {
+  background: rgba(248, 113, 113, 0.2);
+  color: rgba(248, 113, 113, 0.95);
+}
+
+[data-modern-ui] .metric-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 1.5rem;
+}
+
+[data-modern-ui] .metric-card h3 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--modern-text-muted);
+}
+
+[data-modern-ui] .metric-card .metric-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+}
+
+[data-modern-ui] .modern-breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--modern-text-muted);
+}
+
+.sidebar-shell {
+  background: linear-gradient(165deg, rgba(8, 12, 28, 0.96), rgba(13, 17, 35, 0.96));
+  border-right: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 0 60px rgba(15, 23, 42, 0.45);
+}
+
+.sidebar-shell .sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 2.5rem 2.2rem;
+}
+
+.sidebar-shell .sidebar-brand-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 1.25rem;
+  background: radial-gradient(circle at 30% 30%, rgba(129, 140, 248, 0.95), rgba(56, 189, 248, 0.85));
+  box-shadow: 0 18px 45px -18px rgba(79, 70, 229, 0.75);
+  position: relative;
+}
+
+.sidebar-shell .sidebar-brand-badge::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  opacity: 0.6;
+}
+
+.sidebar-shell nav {
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.sidebar-shell nav a {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1.25rem;
+  border-radius: 1rem;
+  font-weight: 500;
+  color: rgba(203, 213, 225, 0.9);
+  transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.sidebar-shell nav a:hover {
+  color: white;
+  background: rgba(79, 70, 229, 0.18);
+  transform: translateX(4px);
+}
+
+.sidebar-shell nav a[aria-current='page'],
+.sidebar-shell nav a.active-link {
+  color: white;
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.45), rgba(56, 189, 248, 0.35));
+  box-shadow: 0 20px 35px -25px rgba(56, 189, 248, 0.7);
+  border: 1px solid rgba(129, 140, 248, 0.45);
+}
+
+.sidebar-shell nav a span.icon {
+  width: 2rem;
+  text-align: center;
+  font-size: 1.25rem;
+}
+
+.sidebar-shell .sidebar-footer {
+  margin-top: auto;
+  padding: 2rem 2.25rem 2.5rem;
+}
+
+.sidebar-shell .sidebar-footer button {
+  width: 100%;
+  border-radius: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(15, 23, 42, 0.75);
+  color: rgba(241, 245, 249, 0.95);
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  gap: 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.sidebar-shell .sidebar-footer button:hover {
+  border-color: rgba(148, 163, 184, 0.45);
+  background: rgba(15, 23, 42, 0.9);
+  transform: translateY(-2px);
+}
+
+[data-modern-ui] .muted-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--modern-text-muted);
+}
+
+[data-modern-ui] .grid-gap-xl {
+  display: grid;
+  gap: 2rem;
+}
+
+[data-modern-ui] .section-heading {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+}
+
+[data-modern-ui] .summary-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.95rem;
+  color: var(--modern-text-muted);
+}
+
+[data-modern-ui] .summary-line strong {
+  color: white;
+}
+
+[data-modern-ui] .glass-scroll {
+  border-radius: var(--modern-radius);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  background: rgba(15, 23, 42, 0.5);
+}
+
+[data-modern-ui] .glass-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+[data-modern-ui] .glass-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+[data-modern-ui] .glass-scroll::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 9999px;
+}
+
+[data-modern-ui] .glass-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.45);
+}
+
+@media (max-width: 1023px) {
+  .sidebar-shell {
+    display: none;
+  }
+}
