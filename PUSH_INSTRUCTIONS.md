@@ -35,14 +35,22 @@ This project currently lives in your local environment. To publish the latest ch
    git checkout origin/main -- <path>
    ```
 
-4. Push your local branch (for example, `work`) to GitHub:
-   ```bash
-   git push -u origin work
-   ```
-   Replace `work` with the name of the branch you intend to publish. If you would like the branch to be named `main`, use:
-   ```bash
-   git push -u origin work:main
-   ```
+4. Once conflicts (if any) are resolved, you can either run the push commands manually or use the helper script included in this repository:
+
+   - **Manual push**
+     ```bash
+     git push -u origin work
+     ```
+     Replace `work` with the name of the branch you intend to publish. If you would like the branch to be named `main`, use:
+     ```bash
+     git push -u origin work:main
+     ```
+
+   - **Automated helper**
+     ```bash
+     ./scripts/push_updates.sh work
+     ```
+     The script adds the remote if it is missing, fetches `origin`, merges `origin/main`, and pushes the selected branch. If a merge conflict occurs, it stops and reminds you to resolve and commit before re-running it.
 
 5. After pushing, create a pull request on GitHub if you want to merge your branch into `main` via the web interface.
 
