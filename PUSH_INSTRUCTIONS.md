@@ -21,7 +21,21 @@ This project currently lives in your local environment. To publish the latest ch
    git log --oneline origin/main
    ```
 
-3. Push your local branch (for example, `work`) to GitHub:
+3. If GitHub reports a merge conflict when you open a pull request, bring the remote changes into your local branch and resolve the conflict:
+   ```bash
+   git merge origin/main
+   ```
+   Git will pause at any conflicted files. Edit each file to keep the desired sections, delete the `<<<<<<<`, `=======`, and `>>>>>>>` markers, then stage the resolution:
+   ```bash
+   git add <file1> <file2>
+   git commit
+   ```
+   If you prefer to review the remote branch before merging, you can check it out separately:
+   ```bash
+   git checkout origin/main -- <path>
+   ```
+
+4. Push your local branch (for example, `work`) to GitHub:
    ```bash
    git push -u origin work
    ```
@@ -30,8 +44,8 @@ This project currently lives in your local environment. To publish the latest ch
    git push -u origin work:main
    ```
 
-4. After pushing, create a pull request on GitHub if you want to merge your branch into `main` via the web interface.
+5. After pushing, create a pull request on GitHub if you want to merge your branch into `main` via the web interface.
 
-5. If you encounter authentication prompts, ensure you are using a personal access token with appropriate permissions or have configured SSH keys.
+6. If you encounter authentication prompts, ensure you are using a personal access token with appropriate permissions or have configured SSH keys.
 
 These steps will ensure your local commits are available on GitHub.
